@@ -1,0 +1,36 @@
+{
+  "name": "tauri-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "lint:fe": "oxlint --vue-plugin .",
+    "lint:fe:fix": "oxlint --vue-plugin --fix .",
+    "lint:rust": "cd src-tauri && cargo clippy --all-targets --all-features -- -D warnings",
+    "lint": "bun run lint:fe && bun run lint:rust",
+    "format:fe": "oxfmt .",
+    "format:fe:check": "oxfmt --check .",
+    "format:rust": "cd src-tauri && cargo fmt",
+    "format:rust:check": "cd src-tauri && cargo fmt --check",
+    "format": "bun run format:fe && bun run format:rust",
+    "format:check": "bun run format:fe:check && bun run format:rust:check"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-opener": "^2",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "oxfmt": "^0.20.0",
+    "oxlint": "^1.35.0",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.3",
+    "vue-tsc": "^2.1.10"
+  }
+}
