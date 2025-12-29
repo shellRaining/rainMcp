@@ -22,7 +22,9 @@ stdio 传输:
       "args": ["-y", "@modelcontextprotocol/server-bravesearch"],
       "env": {
         "BRAVE_API_KEY": "value"
-      }
+      },
+      "disabled": false,
+      "autoApprove": []
     }
   }
 }
@@ -37,11 +39,14 @@ HTTP 传输:
       "url": "https://your-server.com/mcp",
       "headers": {
         "Authorization": "Bearer token"
-      }
+      },
+      "timeout": 20000
     }
   }
 }
 ```
+
+注意: `disabled` 字段控制是否禁用服务器，`autoApprove` 字段用于自动批准特定工具的调用。
 
 ## 官方文档
 

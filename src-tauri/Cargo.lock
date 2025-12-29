@@ -2883,12 +2883,14 @@ name = "rain-mcp"
 version = "0.1.0"
 dependencies = [
  "log",
+ "schemars 0.8.22",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-log",
  "tauri-plugin-opener",
+ "toml 0.8.2",
 ]
 
 [[package]]

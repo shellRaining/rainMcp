@@ -1,3 +1,5 @@
+pub mod mcp;
+
 use tauri_plugin_log::{Target, TargetKind};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -14,6 +16,7 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![mcp::get_mcp_servers])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

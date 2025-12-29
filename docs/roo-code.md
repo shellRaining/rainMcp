@@ -2,7 +2,19 @@
 
 ## 配置位置
 
-- 全局: `~/.roo/mcp.json`
+macOS:
+
+- 全局: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`
+- 项目: `.roo/mcp.json`
+
+Windows:
+
+- 全局: `%APPDATA%\Code\User\globalStorage\rooveterinaryinc.roo-cline\settings\mcp_settings.json`
+- 项目: `.roo/mcp.json`
+
+Linux:
+
+- 全局: `~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`
 - 项目: `.roo/mcp.json`
 
 ## 支持的传输类型

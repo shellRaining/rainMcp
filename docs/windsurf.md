@@ -22,7 +22,9 @@ stdio 传输:
       "args": ["-y", "mcp-server"],
       "env": {
         "API_KEY": "value"
-      }
+      },
+      "disabled": false,
+      "disabledTools": []
     }
   }
 }
@@ -37,11 +39,14 @@ HTTP 传输:
       "url": "https://your-server-url/mcp",
       "headers": {
         "Authorization": "Bearer token"
-      }
+      },
+      "timeout": 20000
     }
   }
 }
 ```
+
+注意: `disabled` 字段控制是否禁用服务器，`disabledTools` 字段用于禁用服务器中的特定工具。
 
 ## 官方文档
 

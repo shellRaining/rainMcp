@@ -19,30 +19,36 @@ stdio 传输:
 {
   "mcpServers": {
     "server-name": {
+      "transport": "stdio",
       "command": "npx",
       "args": ["-y", "mcp-server"],
       "env": {
         "API_KEY": "value"
-      }
+      },
+      "startupTimeoutMs": 20000
     }
   }
 }
 ```
 
-HTTP/SSE 传输:
+HTTP 传输:
 
 ```json
 {
   "mcpServers": {
     "server-name": {
+      "transport": "http",
       "url": "http://localhost:3000/mcp",
       "headers": {
         "API_KEY": "value"
-      }
+      },
+      "timeout": 60
     }
   }
 }
 ```
+
+注意: `transport` 字段是必需的，`startupTimeoutMs` 和 `timeout` 字段是可选的。
 
 ## 官方文档
 
