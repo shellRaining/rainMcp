@@ -153,3 +153,78 @@ pub fn read_agent_config(agent: AgentType) -> Result<McpConfig, String> {
         _ => parse_generic_json_config(&path),
     }
 }
+
+fn convert_server_config_to_value(config: &McpServerConfig) -> Result<serde_json::Value, String> {
+    match config {
+        McpServerConfig::Local(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
+        McpServerConfig::Remote(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
+    }
+}
+
+pub fn save_agent_config(agent: AgentType, config: McpConfig) -> Result<(), String> {
+    let path = super::paths::get_global_config_path(agent)?;
+
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+
+    // 如果文件不存在，创建一个新的空结构
+    let file_content = if path.exists() {
+        std::fs::read_to_string(&path).map_err(|e| e.to_string())?
+    } else {
+        String::new()
+    };
+
+    match agent {
+        AgentType::OpenAiCodex => {
+            // TOML 处理
+            let mut toml_value: toml::Table = if file_content.trim().is_empty() {
+                toml::Table::new()
+            } else {
+                toml::from_str(&file_content).map_err(|e| format!("Failed to parse TOML: {}", e))?
+            };
+
+            let mut mcp_servers = toml::Table::new();
+            for (name, server_config) in config.servers {
+                let json_value = convert_server_config_to_value(&server_config)?;
+                // JSON Value -> TOML Value
+                let toml_server_value: toml::Value = toml::Value::try_from(json_value)
+                    .map_err(|e| format!("Failed to convert server config to TOML: {}", e))?;
+
+                mcp_servers.insert(name, toml_server_value);
+            }
+
+            toml_value.insert("mcp_servers".to_string(), toml::Value::Table(mcp_servers));
+
+            let string_output = toml::to_string_pretty(&toml_value)
+                .map_err(|e| format!("Failed to serialize TOML: {}", e))?;
+
+            std::fs::write(path, string_output).map_err(|e| e.to_string())?;
+        }
+        _ => {
+            // JSON 处理 (Generic & ClaudeCode structure)
+            let mut json_value: serde_json::Map<String, serde_json::Value> =
+                if file_content.trim().is_empty() {
+                    serde_json::Map::new()
+                } else {
+                    serde_json::from_str(&file_content)
+                        .map_err(|e| format!("Failed to parse JSON: {}", e))?
+                };
+
+            let mut mcp_servers_map = serde_json::Map::new();
+            for (name, server_config) in config.servers {
+                let server_value = convert_server_config_to_value(&server_config)?;
+                mcp_servers_map.insert(name, server_value);
+            }
+
+            json_value.insert("mcpServers".to_string(), serde_json::Value::Object(mcp_servers_map));
+
+            let string_output = serde_json::to_string_pretty(&json_value)
+                .map_err(|e| format!("Failed to serialize JSON: {}", e))?;
+
+            std::fs::write(path, string_output).map_err(|e| e.to_string())?;
+        }
+    }
+
+    Ok(())
+}

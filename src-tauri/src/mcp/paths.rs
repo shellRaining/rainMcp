@@ -2,91 +2,47 @@ use super::AgentType;
 use std::path::PathBuf;
 
 pub fn get_global_config_path(agent: AgentType) -> Result<PathBuf, String> {
-    let home = std::env::var("HOME")
-        .or_else(|_| std::env::var("USERPROFILE"))
-        .map_err(|_| "Cannot find home directory".to_string())?;
+    let home = dirs::home_dir().ok_or("Cannot find home directory")?;
+    let config_dir = dirs::config_dir().ok_or("Cannot find config directory")?;
 
     let path = match agent {
-        AgentType::ClaudeCode => format!("{}/.claude.json", home),
-        AgentType::Cursor => format!("{}/.cursor/mcp.json", home),
+        AgentType::ClaudeCode => home.join(".claude.json"),
+        AgentType::Cursor => home.join(".cursor/mcp.json"),
         AgentType::Windsurf => {
-            #[cfg(target_os = "windows")]
-            {
-                format!("{}/.codeium/windsurf/mcp_config.json", home)
-            }
-            #[cfg(not(target_os = "windows"))]
-            {
-                format!("{}/.codeium/windsurf/mcp_config.json", home)
-            }
+            // Windsurf uses .codeium/windsurf/mcp_config.json on all platforms in HOME
+            home.join(".codeium/windsurf/mcp_config.json")
         }
         AgentType::Cline => {
-            #[cfg(target_os = "macos")]
-            {
-                format!("{}/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json", home)
-            }
-            #[cfg(target_os = "windows")]
-            {
-                let appdata = std::env::var("APPDATA")
-                    .map_err(|_| "Cannot find APPDATA directory".to_string())?;
-                format!("{}/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json", appdata)
-            }
-            #[cfg(target_os = "linux")]
-            {
-                format!("{}/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json", home)
-            }
+            // macOS: ~/Library/Application Support/Code/User/...
+            // Windows: %APPDATA%\Code\User\...
+            // Linux: ~/.config/Code/User/...
+            // dirs::config_dir() handles the prefix for all these cases.
+            config_dir.join(
+                "Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json",
+            )
         }
         AgentType::ClaudeDesktop => {
-            #[cfg(target_os = "macos")]
-            {
-                format!("{}/Library/Application Support/Claude/claude_desktop_config.json", home)
-            }
-            #[cfg(target_os = "windows")]
-            {
-                let appdata = std::env::var("APPDATA")
-                    .map_err(|_| "Cannot find APPDATA directory".to_string())?;
-                format!("{}/Claude/claude_desktop_config.json", appdata)
-            }
-            #[cfg(target_os = "linux")]
-            {
-                return Err("Claude Desktop is not available on Linux".to_string());
-            }
+            // macOS: ~/Library/Application Support/Claude/...
+            // Windows: %APPDATA%\Claude\...
+            // Linux: Not officially supported, but XDG would be ~/.config/Claude/...
+            config_dir.join("Claude/claude_desktop_config.json")
         }
         AgentType::RooCode => {
-            #[cfg(target_os = "macos")]
-            {
-                format!("{}/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json", home)
-            }
-            #[cfg(target_os = "windows")]
-            {
-                let appdata = std::env::var("APPDATA")
-                    .map_err(|_| "Cannot find APPDATA directory".to_string())?;
-                format!("{}/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json", appdata)
-            }
-            #[cfg(target_os = "linux")]
-            {
-                format!("{}/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json", home)
-            }
+            // Same as VSCode/Cline structure
+            config_dir.join(
+                "Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json",
+            )
         }
         AgentType::Trae => {
-            #[cfg(target_os = "macos")]
-            {
-                format!("{}/Library/Application Support/Trae/User/mcp.json", home)
-            }
-            #[cfg(target_os = "windows")]
-            {
-                let appdata = std::env::var("APPDATA")
-                    .map_err(|_| "Cannot find APPDATA directory".to_string())?;
-                format!("{}/Trae/User/mcp.json", appdata)
-            }
-            #[cfg(target_os = "linux")]
-            {
-                format!("{}/.config/Trae/User/mcp.json", home)
-            }
+            // macOS: ~/Library/Application Support/Trae/User/...
+            // Windows: %APPDATA%\Trae\User\...
+            // Linux: ~/.config/Trae/User/...
+            config_dir.join("Trae/User/mcp.json")
         }
-        AgentType::GeminiCli => format!("{}/.gemini/settings.json", home),
-        AgentType::Kiro => format!("{}/.kiro/settings/mcp.json", home),
-        AgentType::OpenAiCodex => format!("{}/.codex/config.toml", home),
+        AgentType::GeminiCli => home.join(".gemini/settings.json"),
+        AgentType::Kiro => home.join(".kiro/settings/mcp.json"),
+        AgentType::OpenAiCodex => home.join(".codex/config.toml"),
     };
 
-    Ok(PathBuf::from(path))
+    Ok(path)
 }
