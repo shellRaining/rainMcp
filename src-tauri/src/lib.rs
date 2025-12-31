@@ -17,8 +17,10 @@ pub fn run() {
                 .build(),
         )
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             mcp::get_agent_mcp_config_command,
+            mcp::get_server_raw_config_command,
             mcp::update_agent_mcp_config_command,
             mcp::get_supported_agents_command,
             mcp::get_enabled_agents_command,

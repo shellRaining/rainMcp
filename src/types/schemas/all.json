@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AllTypes",
+  "description": "包含所有需要导出的类型",
+  "type": "object",
+  "required": ["agentType", "mcpConfig", "mcpServerConfig", "supportedAgent"],
+  "properties": {
+    "agentType": {
+      "$ref": "#/definitions/AgentType"
+    },
+    "mcpConfig": {
+      "$ref": "#/definitions/McpConfig"
+    },
+    "mcpServerConfig": {
+      "$ref": "#/definitions/McpServerConfig"
+    },
+    "supportedAgent": {
+      "$ref": "#/definitions/SupportedAgent"
+    }
+  },
+  "definitions": {
+    "AgentType": {
+      "type": "string",
+      "enum": [
+        "ClaudeCode",
+        "Cursor",
+        "Windsurf",
+        "Cline",
+        "ClaudeDesktop",
+        "RooCode",
+        "Trae",
+        "GeminiCli",
+        "Kiro",
+        "OpenAiCodex"
+      ]
+    },
+    "McpConfig": {
+      "type": "object",
+      "required": ["servers"],
+      "properties": {
+        "servers": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/McpServerConfig"
+          }
+        }
+      }
+    },
+    "McpServerConfig": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["command", "type"],
+          "properties": {
+            "args": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "command": {
+              "type": "string"
+            },
+            "env": {
+              "type": ["object", "null"],
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "timeout": {
+              "type": ["integer", "null"],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "type": {
+              "type": "string",
+              "enum": ["local"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "url"],
+          "properties": {
+            "headers": {
+              "type": ["object", "null"],
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "timeout": {
+              "type": ["integer", "null"],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "type": {
+              "type": "string",
+              "enum": ["remote"]
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "SupportedAgent": {
+      "type": "object",
+      "required": ["agent_type", "config_path", "enabled", "is_configured", "name"],
+      "properties": {
+        "agent_type": {
+          "$ref": "#/definitions/AgentType"
+        },
+        "config_path": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "is_configured": {
+          "type": "boolean"
+        },
+        "mcp_config": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/McpConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

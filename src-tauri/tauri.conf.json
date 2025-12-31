@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "rainMcp",
-        "width": 800,
-        "height": 600
+        "title": "Rain MCP",
+        "width": 1000,
+        "height": 700,
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
       }
     ],
     "security": {

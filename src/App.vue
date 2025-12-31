@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import TestComponent from './components/TestComponent.vue';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import MainLayout from '@/components/layout/MainLayout.vue';
 </script>
 
 <template>
-  <div class="app p-8">
-    <TestComponent />
-  </div>
+  <TooltipProvider>
+    <MainLayout />
+  </TooltipProvider>
 </template>
-
-<style scoped></style>

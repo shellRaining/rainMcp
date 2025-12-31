@@ -98,6 +98,15 @@ pub fn get_agent_mcp_config_command(agent_name: String) -> Result<McpConfig, Str
 }
 
 #[tauri::command]
+pub fn get_server_raw_config_command(
+    agent_name: String,
+    server_name: String,
+) -> Result<String, String> {
+    let agent = parse_agent_name(&agent_name)?;
+    parser::get_server_raw_config(agent, &server_name)
+}
+
+#[tauri::command]
 pub fn get_supported_agents_command() -> Result<Vec<SupportedAgent>, String> {
     let agents = get_all_agent_types();
     let app_config = load_app_config();

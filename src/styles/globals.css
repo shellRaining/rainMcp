@@ -1,0 +1,190 @@
+@import '@unocss/reset/tailwind.css';
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
+  --radius: 0.5rem;
+
+  /* 动画时长 */
+  --duration-fast: 100ms;
+  --duration-normal: 150ms;
+  --duration-slow: 250ms;
+
+  /* 缓动函数 */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  --background: 0 0% 9%;
+  --foreground: 0 0% 90%;
+  --card: 0 0% 11%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 11%;
+  --popover-foreground: 0 0% 90%;
+  --primary: 0 0% 90%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 50%;
+  --accent: 0 0% 16%;
+  --accent-foreground: 0 0% 90%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 15%;
+  --input: 0 0% 16%;
+  --ring: 0 0% 25%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings:
+    'rlig' 1,
+    'calt' 1;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* 允许选择的区域 */
+.selectable,
+code,
+pre {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+button,
+a,
+[role='button'],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+[data-reka-scroll-area-viewport] {
+  overscroll-behavior: contain;
+}
+
+/* ===== 统一动画样式 ===== */
+
+/* 菜单展开/收起动画 */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition:
+    grid-template-rows var(--duration-normal) var(--ease-out),
+    opacity var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* 列表项动画 */
+.list-enter-active {
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+}
+
+.list-leave-active {
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.list-move {
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+/* 页面切换动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-in-out);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 滑动淡入动画 */
+.slide-fade-enter-active {
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+.slide-fade-leave-active {
+  transition:
+    opacity var(--duration-normal) var(--ease-out),
+    transform var(--duration-normal) var(--ease-out);
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}

@@ -13,27 +13,40 @@
     "lint": "bun run lint:fe && bun run lint:rust",
     "format:fe": "oxfmt .",
     "format:rust": "cd src-tauri && cargo fmt",
-    "format": "bun run format:fe && bun run format:rust"
+    "format": "bun run format:fe && bun run format:rust",
+    "generate:schema": "cd src-tauri && cargo run --example generate_schema",
+    "generate:types": "bun run scripts/generate-types.ts",
+    "generate": "bun run generate:schema && bun run generate:types"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "@tauri-apps/plugin-log": "^2.7.1",
     "@tauri-apps/plugin-opener": "^2",
     "@vueuse/core": "^14.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-vue-next": "^0.562.0",
     "pinia": "^3.0.4",
     "reka-ui": "^2.7.0",
+    "tailwind-merge": "^3.4.0",
     "vue": "^3.5.13"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "@unocss/preset-attributify": "^66.5.11",
     "@unocss/preset-icons": "^66.5.11",
+    "@unocss/reset": "^66.5.12",
     "@vitejs/plugin-vue": "^5.2.1",
+    "json-schema-to-typescript": "^15.0.4",
     "oxfmt": "^0.20.0",
     "oxlint": "^1.35.0",
     "typescript": "~5.6.2",
     "unocss": "^66.5.11",
+    "unocss-preset-animations": "^1.3.0",
+    "unocss-preset-shadcn": "^1.0.1",
     "vite": "^6.0.3",
+    "vite-svg-loader": "^5.1.0",
     "vue-tsc": "^2.1.10"
   }
 }

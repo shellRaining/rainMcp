@@ -52,5 +52,6 @@ mod app_config_tests;
 mod enabled_agents_tests;
 mod fixtures;
 mod get_config_tests;
+mod get_server_raw_config_tests;
 mod get_supported_agents_tests;
 mod update_config_tests;

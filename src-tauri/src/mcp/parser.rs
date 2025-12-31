@@ -154,6 +154,55 @@ pub fn read_agent_config(agent: AgentType) -> Result<McpConfig, String> {
     }
 }
 
+/// 获取指定 server 的原始配置字符串（包含 server 名称作为 key）
+pub fn get_server_raw_config(agent: AgentType, server_name: &str) -> Result<String, String> {
+    let path = super::paths::get_global_config_path(agent)?;
+
+    if !path.exists() {
+        return Err(format!("Config file not found: {:?}", path));
+    }
+
+    let content =
+        std::fs::read_to_string(&path).map_err(|e| format!("Failed to read config file: {}", e))?;
+
+    match agent {
+        AgentType::OpenAiCodex => {
+            let toml_value: toml::Value = toml::from_str(&content)
+                .map_err(|e| format!("Failed to parse TOML config: {}", e))?;
+
+            let server_config = toml_value
+                .get("mcp_servers")
+                .and_then(|v| v.get(server_name))
+                .ok_or_else(|| format!("Server '{}' not found", server_name))?
+                .clone();
+
+            // 构建包含 server 名称的 table
+            let mut wrapper = toml::Table::new();
+            wrapper.insert(server_name.to_string(), server_config);
+
+            toml::to_string_pretty(&wrapper)
+                .map_err(|e| format!("Failed to serialize server config: {}", e))
+        }
+        _ => {
+            let json_value: serde_json::Value = serde_json::from_str(&content)
+                .map_err(|e| format!("Failed to parse JSON config: {}", e))?;
+
+            let server_config = json_value
+                .get("mcpServers")
+                .and_then(|v| v.get(server_name))
+                .ok_or_else(|| format!("Server '{}' not found", server_name))?
+                .clone();
+
+            // 构建包含 server 名称的对象
+            let mut wrapper = serde_json::Map::new();
+            wrapper.insert(server_name.to_string(), server_config);
+
+            serde_json::to_string_pretty(&wrapper)
+                .map_err(|e| format!("Failed to serialize server config: {}", e))
+        }
+    }
+}
+
 fn convert_server_config_to_value(config: &McpServerConfig) -> Result<serde_json::Value, String> {
     match config {
         McpServerConfig::Local(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
