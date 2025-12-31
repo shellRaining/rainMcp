@@ -51,10 +51,7 @@ fn update_agent_mcp_config_command_preserves_claude_code_fields(
 
     let updated: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
-    assert_eq!(
-        updated.get("installMethod").and_then(|v| v.as_str()),
-        Some("homebrew")
-    );
+    assert_eq!(updated.get("installMethod").and_then(|v| v.as_str()), Some("homebrew"));
     assert_eq!(updated.get("numStartups").and_then(|v| v.as_u64()), Some(12));
 
     let mcp_servers = updated.get("mcpServers").and_then(|v| v.as_object()).unwrap();
@@ -71,15 +68,9 @@ fn update_agent_mcp_config_command_preserves_claude_code_fields(
     assert_eq!(env.get("API_KEY").and_then(|v| v.as_str()), Some("value"));
 
     let remote = mcp_servers.get("remote-server").and_then(|v| v.as_object()).unwrap();
-    assert_eq!(
-        remote.get("url").and_then(|v| v.as_str()),
-        Some("https://mcp.example.com/mcp")
-    );
+    assert_eq!(remote.get("url").and_then(|v| v.as_str()), Some("https://mcp.example.com/mcp"));
     let headers = remote.get("headers").and_then(|v| v.as_object()).unwrap();
-    assert_eq!(
-        headers.get("Authorization").and_then(|v| v.as_str()),
-        Some("Bearer token")
-    );
+    assert_eq!(headers.get("Authorization").and_then(|v| v.as_str()), Some("Bearer token"));
 }
 
 #[rstest]
@@ -120,10 +111,7 @@ fn update_agent_mcp_config_command_preserves_codex_fields(
 
     let updated: toml::Value = toml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
     assert_eq!(updated.get("model").and_then(|v| v.as_str()), Some("gpt-4.1"));
-    assert_eq!(
-        updated.get("model_reasoning_effort").and_then(|v| v.as_str()),
-        Some("medium")
-    );
+    assert_eq!(updated.get("model_reasoning_effort").and_then(|v| v.as_str()), Some("medium"));
     let notice = updated.get("notice").and_then(|v| v.as_table()).unwrap();
     assert_eq!(notice.get("version").and_then(|v| v.as_integer()), Some(1));
     assert_eq!(notice.get("message").and_then(|v| v.as_str()), Some("keep"));
@@ -143,16 +131,10 @@ fn update_agent_mcp_config_command_preserves_codex_fields(
     assert_eq!(env.get("TOKEN").and_then(|v| v.as_str()), Some("value"));
 
     let remote = mcp_servers.get("remote").and_then(|v| v.as_table()).unwrap();
-    assert_eq!(
-        remote.get("url").and_then(|v| v.as_str()),
-        Some("https://mcp.example.com/mcp")
-    );
+    assert_eq!(remote.get("url").and_then(|v| v.as_str()), Some("https://mcp.example.com/mcp"));
     assert_eq!(remote.get("timeout").and_then(|v| v.as_integer()), Some(45));
     let headers = remote.get("headers").and_then(|v| v.as_table()).unwrap();
-    assert_eq!(
-        headers.get("Authorization").and_then(|v| v.as_str()),
-        Some("Bearer new")
-    );
+    assert_eq!(headers.get("Authorization").and_then(|v| v.as_str()), Some("Bearer new"));
 }
 
 #[rstest]
