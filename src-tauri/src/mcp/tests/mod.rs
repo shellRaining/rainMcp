@@ -48,6 +48,7 @@ pub fn set_temp_home(temp_dir: &TempDir) -> EnvGuard {
     env_guard
 }
 
+mod app_config_tests;
 mod enabled_agents_tests;
 mod fixtures;
 mod get_config_tests;
