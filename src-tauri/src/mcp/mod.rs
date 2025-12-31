@@ -223,7 +223,7 @@ fn parse_agent_name(name: &str) -> Result<AgentType, String> {
         "trae" => Ok(AgentType::Trae),
         "gemini-cli" | "gemini_cli" | "geminicli" => Ok(AgentType::GeminiCli),
         "kiro" => Ok(AgentType::Kiro),
-        "openai-codex" | "openai_codex" | "codex" => Ok(AgentType::OpenAiCodex),
+        "openai-codex" | "openai_codex" | "openaicodex" | "codex" => Ok(AgentType::OpenAiCodex),
         _ => Err(format!("Unknown agent: {}", name)),
     }
 }
