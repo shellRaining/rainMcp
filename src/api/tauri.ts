@@ -1,5 +1,14 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AgentType, AppConfig, McpConfig, SupportedAgent } from '@/types/mcp';
+import type {
+  AgentType,
+  AppConfig,
+  AgentServers,
+  SchemaStore,
+  SupportedAgent,
+  UserServer,
+} from '@/types/mcp';
+
+// ===== Agent APIs =====
 
 export async function getSupportedAgents(): Promise<SupportedAgent[]> {
   return invoke('get_supported_agents_command');
@@ -13,13 +22,23 @@ export async function updateEnabledAgents(enabledAgents: string[]): Promise<void
   return invoke('update_enabled_agents_command', { enabledAgents });
 }
 
-export async function getAgentMcpConfig(agentName: string): Promise<McpConfig> {
+export async function getAgentMcpConfig(agentName: string): Promise<AgentServers> {
   return invoke('get_agent_mcp_config_command', { agentName });
 }
 
-export async function updateAgentMcpConfig(agentName: string, config: McpConfig): Promise<void> {
+export async function updateAgentMcpConfig(agentName: string, config: AgentServers): Promise<void> {
   return invoke('update_agent_mcp_config_command', { agentName, config });
 }
+
+export async function openConfigFile(agentName: string): Promise<void> {
+  return invoke('open_config_file_command', { agentName });
+}
+
+export async function getServerRawConfig(agentName: string, serverName: string): Promise<string> {
+  return invoke('get_server_raw_config_command', { agentName, serverName });
+}
+
+// ===== App Config APIs =====
 
 export async function getAppConfig(): Promise<AppConfig> {
   return invoke('get_app_config_command');
@@ -29,10 +48,48 @@ export async function updateAppConfig(config: AppConfig): Promise<void> {
   return invoke('update_app_config_command', { config });
 }
 
-export async function openConfigFile(agentName: string): Promise<void> {
-  return invoke('open_config_file_command', { agentName });
+// ===== Schema Store APIs =====
+
+export async function getSchemaStore(): Promise<SchemaStore> {
+  return invoke('get_schema_store_command');
 }
 
-export async function getServerRawConfig(agentName: string, serverName: string): Promise<string> {
-  return invoke('get_server_raw_config_command', { agentName, serverName });
+export async function refreshSchemaStore(): Promise<SchemaStore> {
+  return invoke('refresh_schema_store_command');
+}
+
+// ===== User Server APIs =====
+
+export async function getUserServers(): Promise<UserServer[]> {
+  return invoke('get_user_servers_command');
+}
+
+export async function addUserServer(server: UserServer): Promise<UserServer> {
+  return invoke('add_user_server_command', { server });
+}
+
+export async function updateUserServer(server: UserServer): Promise<UserServer> {
+  return invoke('update_user_server_command', { server });
+}
+
+export async function deleteUserServer(serverId: string): Promise<void> {
+  return invoke('delete_user_server_command', { serverId });
+}
+
+export async function addServerToAgent(
+  agentName: string,
+  serverId: string,
+  serverName?: string
+): Promise<void> {
+  return invoke('add_server_to_agent_command', { agentName, serverId, serverName });
+}
+
+// ===== Window APIs =====
+
+export async function setTrafficLightsInset(
+  windowLabel: string,
+  x: number,
+  y: number
+): Promise<void> {
+  return invoke('set_traffic_lights_inset_command', { windowLabel, x, y });
 }

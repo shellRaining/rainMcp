@@ -1,5 +1,22 @@
 // Re-export generated types from Rust
-export type { AgentType, McpConfig, McpServerConfig, SupportedAgent } from './generated';
+export type {
+  AgentType,
+  AgentServers,
+  AgentServerEntry,
+  SupportedAgent,
+  // User server types
+  UserServer,
+  ServerOrigin,
+  OriginType,
+  // Schema store types
+  ServerSchema,
+  SchemaStore,
+  Package,
+  EnvironmentVariable,
+  Icon,
+  LocalTransport,
+  RemoteTransport,
+} from './generated';
 
 import type { AgentType } from './generated';
 

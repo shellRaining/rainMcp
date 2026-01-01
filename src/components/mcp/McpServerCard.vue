@@ -4,11 +4,12 @@ import { Terminal, Globe, Copy, Check, ChevronDown, Clock } from 'lucide-vue-nex
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import type { McpServerConfig } from '@/types/mcp';
+import type { AgentServerEntry } from '@/types/mcp';
 import * as tauriApi from '@/api/tauri';
+import { logger } from '@/utils/logger';
 
 const props = defineProps<{
-  server: McpServerConfig & { name: string };
+  server: AgentServerEntry & { name: string };
   agentName: string;
 }>();
 
@@ -46,7 +47,7 @@ async function handleCopy(event: Event) {
       isCopied.value = false;
     }, 2000);
   } catch (error) {
-    console.error('Failed to copy config:', error);
+    logger.error('Failed to copy config:', error);
   }
 }
 </script>

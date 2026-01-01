@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import McpServerCard from './McpServerCard.vue';
 import { useAgentsStore } from '@/stores/agents';
 import { AGENT_DISPLAY_NAMES } from '@/types/mcp';
+import { logger } from '@/utils/logger';
 
 const agentsStore = useAgentsStore();
 const isPathCopied = ref(false);
@@ -36,7 +37,7 @@ async function handleCopyPath() {
         isPathCopied.value = false;
       }, 2000);
     } catch (error) {
-      console.error('Failed to copy path:', error);
+      logger.error('Failed to copy path:', error);
     }
   }
 }

@@ -13,20 +13,23 @@ import {
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { useAgentsStore } from '@/stores/agents';
+import { useServersStore } from '@/stores/servers';
 import { useAppStore, type PrimaryMenu } from '@/stores/app';
 import { AGENT_DISPLAY_NAMES } from '@/types/mcp';
 
 const agentsStore = useAgentsStore();
+const serversStore = useServersStore();
 const appStore = useAppStore();
 
 onMounted(() => {
   agentsStore.fetchAgents();
+  serversStore.fetchUserServers();
 });
 
 const primaryMenuItems = [
   { id: 'overview' as PrimaryMenu, label: 'Overview', icon: LayoutDashboard, hasSubmenu: false },
   { id: 'agents' as PrimaryMenu, label: 'Agents', icon: Bot, hasSubmenu: true },
-  { id: 'servers' as PrimaryMenu, label: 'Servers', icon: Server, hasSubmenu: false },
+  { id: 'servers' as PrimaryMenu, label: 'Servers', icon: Server, hasSubmenu: true },
   { id: 'settings' as PrimaryMenu, label: 'Settings', icon: Settings, hasSubmenu: true },
 ];
 
@@ -47,6 +50,11 @@ function handleAgentClick(agentName: string) {
 
 function handleSettingsSubmenuClick(submenuId: string) {
   appStore.clickDetailItem('settings', submenuId);
+}
+
+function handleServerClick(serverId: string) {
+  serversStore.selectServer(serverId);
+  appStore.clickDetailItem('servers', serverId);
 }
 </script>
 
@@ -122,7 +130,38 @@ function handleSettingsSubmenuClick(submenuId: string) {
           </div>
         </Transition>
 
-        <!-- 二级菜单：Servers（暂不实现） -->
+        <!-- 二级菜单：Servers -->
+        <Transition name="collapse">
+          <div v-if="item.id === 'servers' && appStore.isMenuExpanded('servers')" class="grid">
+            <div class="overflow-hidden pl-4 space-y-0.5">
+              <div
+                v-if="serversStore.userServers.length === 0"
+                class="px-3 py-2 text-xs text-muted-foreground"
+              >
+                No servers configured
+              </div>
+              <TransitionGroup name="list">
+                <button
+                  v-for="server in serversStore.userServers"
+                  :key="server.id"
+                  :class="
+                    cn(
+                      'w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-sm',
+                      'transition-colors duration-[var(--duration-fast)]',
+                      'hover:bg-accent',
+                      appStore.selectedDetailId === server.id &&
+                        appStore.currentPrimaryMenu === 'servers' &&
+                        'bg-accent text-accent-foreground'
+                    )
+                  "
+                  @click="handleServerClick(server.id)"
+                >
+                  <span class="truncate">{{ server.name }}</span>
+                </button>
+              </TransitionGroup>
+            </div>
+          </div>
+        </Transition>
 
         <!-- 二级菜单：Settings -->
         <Transition name="collapse">

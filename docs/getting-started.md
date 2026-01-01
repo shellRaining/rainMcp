@@ -65,7 +65,11 @@ rainMcp/
 │   │   ├── mcp/                  # MCP 相关组件
 │   │   └── servers/              # Server 相关组件
 │   ├── stores/                   # Pinia 状态管理
-│   ├── views/                    # 页面视图
+│   ├── views/                    # 页面视图（按功能模块分组）
+│   │   ├── overview/             # 主仪表板视图
+│   │   ├── agents/               # Agents 相关视图
+│   │   ├── servers/              # Servers 相关视图
+│   │   └── settings/             # Settings 相关视图
 │   ├── types/                    # TypeScript 类型定义
 │   └── styles/                   # 全局样式
 ├── src-tauri/                    # 后端源码
@@ -140,6 +144,47 @@ pub fn run() {
 - macOS: ~/Library/Logs/com.shellraining.rainMcp/
 - Linux: ~/.local/state/com.shellraining.rainMcp/
 - Windows: %LOCALAPPDATA%\com.shellraining.rainMcp\logs\
+
+#### 日志级别控制
+
+日志级别按以下优先级确定：
+
+1. 环境变量 `RUST_LOG`：Rust log crate 标准环境变量
+
+   ```bash
+   export RUST_LOG=debug
+   bun run tauri dev
+   ```
+
+2. 环境变量 `LOG_LEVEL`：自定义环境变量（支持：TRACE, DEBUG, INFO, WARN, ERROR, OFF）
+
+   ```bash
+   export LOG_LEVEL=debug
+   bun run tauri dev
+   ```
+
+3. 开发模式检测：如果使用 `bun run tauri dev` 或 `cargo run`（debug 模式），自动使用 `Debug` 级别
+
+4. 默认值：生产模式使用 `Info` 级别
+
+示例：
+
+```bash
+# 使用 Debug 级别（显示所有日志，包括 logger.debug()）
+export LOG_LEVEL=debug
+bun run tauri dev
+
+# 使用 Trace 级别（最详细的日志）
+export LOG_LEVEL=trace
+bun run tauri dev
+
+# 只显示 Error 级别日志
+export LOG_LEVEL=error
+bun run tauri dev
+
+# 不设置环境变量时，开发模式自动使用 Debug 级别
+bun run tauri dev
+```
 
 ### 4.3 应用配置模块（config.rs）
 
@@ -377,13 +422,16 @@ UI 组件（components/ui/）：
 
 ### 5.5 视图层（views/）
 
-| 视图                | 路径                          | 说明             |
-| ------------------- | ----------------------------- | ---------------- |
-| OverviewView        | views/OverviewView.vue        | 主仪表板         |
-| AgentsOverviewView  | views/AgentsOverviewView.vue  | Agent 列表       |
-| ServersOverviewView | views/ServersOverviewView.vue | Server 列表      |
-| ServerDetailView    | views/ServerDetailView.vue    | Server 详情      |
-| 设置页面            | views/settings/               | 主题、关于等设置 |
+视图文件按功能模块组织到子目录中：
+
+| 视图                 | 路径                                    | 说明             |
+| -------------------- | --------------------------------------- | ---------------- |
+| OverviewView         | views/overview/OverviewView.vue         | 主仪表板         |
+| AgentsOverviewView   | views/agents/AgentsOverviewView.vue     | Agent 列表       |
+| ServersOverviewView  | views/servers/ServersOverviewView.vue   | Server 列表      |
+| ServerDetailView     | views/servers/ServerDetailView.vue      | Server 详情      |
+| SettingsOverviewView | views/settings/SettingsOverviewView.vue | Settings 主页    |
+| 其他设置页面         | views/settings/                         | 主题、关于等设置 |
 
 注意：项目使用 Pinia 状态管理实现视图切换，而非 Vue Router。
 
@@ -508,7 +556,7 @@ cargo test
 前端：
 
 ```bash
-bun run lint:ts      # Oxlint 检查
+bun run lint:fe      # Oxlint 检查
 bun run lint:rust    # Cargo clippy
 bun run lint         # 同时检查前后端
 ```
@@ -527,7 +575,7 @@ missing_panics_doc = "allow"
 ### 8.2 Format
 
 ```bash
-bun run format:ts    # oxfmt 格式化前端
+bun run format:fe    # oxfmt 格式化前端
 bun run format:rust  # rustfmt 格式化后端
 bun run format       # 同时格式化前后端
 ```

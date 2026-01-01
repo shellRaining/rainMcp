@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Sidebar from './Sidebar.vue';
-import OverviewView from '@/views/OverviewView.vue';
-import AgentsOverviewView from '@/views/AgentsOverviewView.vue';
+import OverviewView from '@/views/overview/OverviewView.vue';
+import AgentsOverviewView from '@/views/agents/AgentsOverviewView.vue';
 import AgentDetail from '@/components/mcp/AgentDetail.vue';
-import ServersOverviewView from '@/views/ServersOverviewView.vue';
-import SettingsOverviewView from '@/views/SettingsOverviewView.vue';
+import ServersOverviewView from '@/views/servers/ServersOverviewView.vue';
+import ServerDetailView from '@/views/servers/ServerDetailView.vue';
+import SettingsOverviewView from '@/views/settings/SettingsOverviewView.vue';
 import AgentManagementView from '@/views/settings/AgentManagementView.vue';
 import ThemeView from '@/views/settings/ThemeView.vue';
 import AboutView from '@/views/settings/AboutView.vue';
@@ -26,7 +27,7 @@ const currentComponent = computed(() => {
   }
 
   if (currentPrimaryMenu === 'servers') {
-    return ServersOverviewView;
+    return isViewingDetail ? ServerDetailView : ServersOverviewView;
   }
 
   if (currentPrimaryMenu === 'settings') {

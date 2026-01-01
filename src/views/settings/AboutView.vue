@@ -1,5 +1,15 @@
 <script setup lang="ts">
 import { ExternalLink } from 'lucide-vue-next';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { logger } from '@/utils/logger';
+
+async function openGitHub() {
+  try {
+    await openUrl('https://github.com/shellraining/rainMcp');
+  } catch (error) {
+    logger.error('Failed to open URL:', error);
+  }
+}
 </script>
 
 <template>
@@ -32,14 +42,13 @@ import { ExternalLink } from 'lucide-vue-next';
         </div>
 
         <div class="flex gap-2">
-          <a
-            href="https://github.com/shellraining/rainMcp"
-            target="_blank"
-            class="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          <span
+            class="inline-flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
+            @click="openGitHub"
           >
             <ExternalLink class="h-3.5 w-3.5" />
             GitHub
-          </a>
+          </span>
         </div>
       </div>
     </div>

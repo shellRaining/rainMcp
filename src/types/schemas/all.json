@@ -3,50 +3,40 @@
   "title": "AllTypes",
   "description": "包含所有需要导出的类型",
   "type": "object",
-  "required": ["agentType", "mcpConfig", "mcpServerConfig", "supportedAgent"],
+  "required": [
+    "agentServerEntry",
+    "agentServers",
+    "agentType",
+    "schemaStore",
+    "serverSchema",
+    "supportedAgent",
+    "userServer"
+  ],
   "properties": {
+    "agentServerEntry": {
+      "$ref": "#/definitions/AgentServerEntry"
+    },
+    "agentServers": {
+      "$ref": "#/definitions/AgentServers"
+    },
     "agentType": {
       "$ref": "#/definitions/AgentType"
     },
-    "mcpConfig": {
-      "$ref": "#/definitions/McpConfig"
+    "schemaStore": {
+      "$ref": "#/definitions/SchemaStore"
     },
-    "mcpServerConfig": {
-      "$ref": "#/definitions/McpServerConfig"
+    "serverSchema": {
+      "$ref": "#/definitions/ServerSchema"
     },
     "supportedAgent": {
       "$ref": "#/definitions/SupportedAgent"
+    },
+    "userServer": {
+      "$ref": "#/definitions/UserServer"
     }
   },
   "definitions": {
-    "AgentType": {
-      "type": "string",
-      "enum": [
-        "ClaudeCode",
-        "Cursor",
-        "Windsurf",
-        "Cline",
-        "ClaudeDesktop",
-        "RooCode",
-        "Trae",
-        "GeminiCli",
-        "Kiro",
-        "OpenAiCodex"
-      ]
-    },
-    "McpConfig": {
-      "type": "object",
-      "required": ["servers"],
-      "properties": {
-        "servers": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/McpServerConfig"
-          }
-        }
-      }
-    },
-    "McpServerConfig": {
+    "AgentServerEntry": {
       "oneOf": [
         {
           "type": "object",
@@ -104,7 +94,469 @@
         }
       ]
     },
+    "AgentServers": {
+      "type": "object",
+      "required": ["servers"],
+      "properties": {
+        "servers": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/AgentServerEntry"
+          }
+        }
+      }
+    },
+    "AgentType": {
+      "description": "Supported AI coding agent types",
+      "type": "string",
+      "enum": [
+        "ClaudeCode",
+        "Cursor",
+        "Windsurf",
+        "Cline",
+        "ClaudeDesktop",
+        "RooCode",
+        "Trae",
+        "GeminiCli",
+        "Kiro",
+        "OpenAiCodex"
+      ]
+    },
+    "Argument": {
+      "description": "Command-line argument (corresponds to PositionalArgument | NamedArgument in schema)\n\nNote: Using struct instead of enum because API may return empty or unknown type values. See: https://github.com/modelcontextprotocol/registry for edge cases.",
+      "type": "object",
+      "properties": {
+        "choices": {
+          "description": "Possible choices for the argument value",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "description": "Default value for the argument",
+          "type": ["string", "null"]
+        },
+        "description": {
+          "description": "Description of the argument",
+          "type": ["string", "null"]
+        },
+        "format": {
+          "description": "Input format: \"string\", \"number\", \"boolean\", \"filepath\"",
+          "type": ["string", "null"]
+        },
+        "isRepeated": {
+          "description": "Whether the argument can be repeated",
+          "default": false,
+          "type": "boolean"
+        },
+        "isRequired": {
+          "description": "Whether the argument is required",
+          "default": false,
+          "type": "boolean"
+        },
+        "isSecret": {
+          "description": "Whether the argument contains sensitive data (e.g., password, token)",
+          "default": false,
+          "type": "boolean"
+        },
+        "name": {
+          "description": "Argument name (for named arguments, including leading dashes like \"--port\")",
+          "type": ["string", "null"]
+        },
+        "placeholder": {
+          "description": "Placeholder text for UI display",
+          "type": ["string", "null"]
+        },
+        "type": {
+          "description": "Argument type: \"positional\", \"named\", or may be empty",
+          "default": "",
+          "type": "string"
+        },
+        "value": {
+          "description": "Argument value (fixed value, not user-configurable)",
+          "type": ["string", "null"]
+        },
+        "valueHint": {
+          "description": "Hint for what kind of value is expected (for positional arguments)",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "EnvironmentVariable": {
+      "description": "Environment variable or header configuration (corresponds to Input/KeyValueInput in schema)",
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "choices": {
+          "description": "Possible choices",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "default": {
+          "description": "Default value",
+          "type": ["string", "null"]
+        },
+        "description": {
+          "description": "Description of the variable",
+          "type": ["string", "null"]
+        },
+        "format": {
+          "description": "Input format (string, number, boolean, filepath)",
+          "type": ["string", "null"]
+        },
+        "isRequired": {
+          "description": "Whether the variable is required",
+          "default": false,
+          "type": "boolean"
+        },
+        "isSecret": {
+          "description": "Whether the variable contains sensitive data",
+          "default": false,
+          "type": "boolean"
+        },
+        "name": {
+          "description": "Variable name",
+          "type": "string"
+        },
+        "placeholder": {
+          "description": "Placeholder text for UI",
+          "type": ["string", "null"]
+        },
+        "value": {
+          "description": "Fixed value (not user-configurable)",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "Icon": {
+      "description": "Icon for UI display",
+      "type": "object",
+      "required": ["src"],
+      "properties": {
+        "mimeType": {
+          "description": "MIME type",
+          "type": ["string", "null"]
+        },
+        "sizes": {
+          "description": "Available sizes (e.g., [\"48x48\", \"96x96\"])",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "src": {
+          "description": "URL to icon resource",
+          "type": "string"
+        },
+        "theme": {
+          "description": "Theme this icon is designed for",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "LocalTransport": {
+      "description": "Local transport configuration",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["stdio"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "url"],
+          "properties": {
+            "headers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EnvironmentVariable"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": ["sse"]
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "url"],
+          "properties": {
+            "headers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EnvironmentVariable"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": ["streamable-http"]
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "OriginType": {
+      "description": "Origin type for a user server",
+      "oneOf": [
+        {
+          "description": "Server configured from MCP Registry",
+          "type": "string",
+          "enum": ["registry"]
+        },
+        {
+          "description": "Server manually configured by user",
+          "type": "string",
+          "enum": ["custom"]
+        }
+      ]
+    },
+    "Package": {
+      "description": "Package configuration for local installation",
+      "type": "object",
+      "required": ["identifier", "registryType", "transport"],
+      "properties": {
+        "environmentVariables": {
+          "description": "Environment variables",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EnvironmentVariable"
+          }
+        },
+        "fileSha256": {
+          "description": "SHA-256 hash for integrity verification",
+          "type": ["string", "null"]
+        },
+        "identifier": {
+          "description": "Package identifier or URL",
+          "type": "string"
+        },
+        "packageArguments": {
+          "description": "Package arguments",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Argument"
+          }
+        },
+        "registryBaseUrl": {
+          "description": "Base URL of the package registry",
+          "type": ["string", "null"]
+        },
+        "registryType": {
+          "description": "Registry type (npm, pypi, oci, nuget, mcpb)",
+          "type": "string"
+        },
+        "runtimeArguments": {
+          "description": "Runtime arguments",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Argument"
+          }
+        },
+        "runtimeHint": {
+          "description": "Runtime hint (npx, uvx, docker, dnx)",
+          "type": ["string", "null"]
+        },
+        "transport": {
+          "description": "Transport configuration",
+          "allOf": [
+            {
+              "$ref": "#/definitions/LocalTransport"
+            }
+          ]
+        },
+        "version": {
+          "description": "Package version",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "RemoteTransport": {
+      "description": "Remote transport configuration",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "url"],
+          "properties": {
+            "headers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EnvironmentVariable"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": ["sse"]
+            },
+            "url": {
+              "type": "string"
+            },
+            "variables": true
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "url"],
+          "properties": {
+            "headers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EnvironmentVariable"
+              }
+            },
+            "type": {
+              "type": "string",
+              "enum": ["streamable-http"]
+            },
+            "url": {
+              "type": "string"
+            },
+            "variables": true
+          }
+        }
+      ]
+    },
+    "Repository": {
+      "description": "Repository metadata",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Repository ID from hosting service",
+          "type": ["string", "null"]
+        },
+        "source": {
+          "description": "Repository hosting service (e.g., \"github\")",
+          "type": ["string", "null"]
+        },
+        "subfolder": {
+          "description": "Optional subfolder path in monorepo",
+          "type": ["string", "null"]
+        },
+        "url": {
+          "description": "Repository URL",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "SchemaStore": {
+      "description": "Schema store containing all cached server schemas",
+      "type": "object",
+      "required": ["servers"],
+      "properties": {
+        "servers": {
+          "description": "List of server schemas",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ServerSchema"
+          }
+        },
+        "updated_at": {
+          "description": "Timestamp of last update (ISO 8601 format)",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "ServerOrigin": {
+      "description": "Origin information for a user server (for UI display only)",
+      "type": "object",
+      "required": ["originType"],
+      "properties": {
+        "originType": {
+          "description": "Origin type",
+          "allOf": [
+            {
+              "$ref": "#/definitions/OriginType"
+            }
+          ]
+        },
+        "packageId": {
+          "description": "Package identifier: \"{registry_type}:{identifier}\" (e.g., \"npm:@jina-ai/mcp-server\")",
+          "type": ["string", "null"]
+        },
+        "schemaName": {
+          "description": "Registry schema name (e.g., \"io.jina/mcp-jina\")",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "ServerSchema": {
+      "description": "Main server schema structure from MCP Registry",
+      "type": "object",
+      "required": ["description", "name", "version"],
+      "properties": {
+        "$schema": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "description": "Human-readable description of server functionality",
+          "type": "string"
+        },
+        "icons": {
+          "description": "Icons for UI display",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Icon"
+          }
+        },
+        "name": {
+          "description": "Server name in reverse-DNS format (e.g., \"io.github.user/weather\")",
+          "type": "string"
+        },
+        "packages": {
+          "description": "Package configurations for local installation",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Package"
+          }
+        },
+        "remotes": {
+          "description": "Remote transport configurations",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RemoteTransport"
+          }
+        },
+        "repository": {
+          "description": "Repository metadata",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Repository"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title": {
+          "description": "Optional human-readable title",
+          "type": ["string", "null"]
+        },
+        "version": {
+          "description": "Version string (should follow semantic versioning)",
+          "type": "string"
+        },
+        "websiteUrl": {
+          "description": "Optional website URL",
+          "type": ["string", "null"]
+        }
+      }
+    },
     "SupportedAgent": {
+      "description": "Information about a supported agent",
       "type": "object",
       "required": ["agent_type", "config_path", "enabled", "is_configured", "name"],
       "properties": {
@@ -123,7 +575,7 @@
         "mcp_config": {
           "anyOf": [
             {
-              "$ref": "#/definitions/McpConfig"
+              "$ref": "#/definitions/AgentServers"
             },
             {
               "type": "null"
@@ -132,6 +584,44 @@
         },
         "name": {
           "type": "string"
+        }
+      }
+    },
+    "UserServer": {
+      "description": "User-configured MCP server instance",
+      "type": "object",
+      "required": ["config", "id", "name"],
+      "properties": {
+        "config": {
+          "description": "Server configuration (local command or remote URL)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/AgentServerEntry"
+            }
+          ]
+        },
+        "createdAt": {
+          "description": "Timestamp of creation",
+          "type": ["string", "null"]
+        },
+        "id": {
+          "description": "Unique identifier for this user server",
+          "type": "string"
+        },
+        "name": {
+          "description": "Display name for the server",
+          "type": "string"
+        },
+        "origin": {
+          "description": "Origin information for UI display (optional)",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ServerOrigin"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     }

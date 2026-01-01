@@ -1,27 +1,32 @@
 <script setup lang="ts">
 import AgentItem from './AgentItem.vue';
-import { useAgentsStore } from '@/stores/agents';
+import type { SupportedAgent } from '@/types/mcp';
 
-const agentsStore = useAgentsStore();
+defineProps<{
+  agents: SupportedAgent[];
+}>();
+
+const emit = defineEmits<{
+  select: [agentName: string];
+}>();
+
+function getServerCount(agent: SupportedAgent): number {
+  return agent.mcp_config?.servers ? Object.keys(agent.mcp_config.servers).length : 0;
+}
+
+function handleSelect(agentName: string) {
+  emit('select', agentName);
+}
 </script>
 
 <template>
-  <div class="space-y-1">
-    <div v-if="agentsStore.isLoading" class="p-4 text-center text-sm text-muted-foreground">
-      Loading...
-    </div>
-    <div v-else-if="agentsStore.error" class="p-4 text-center text-sm text-destructive">
-      {{ agentsStore.error }}
-    </div>
-    <template v-else>
-      <AgentItem
-        v-for="agent in agentsStore.agents"
-        :key="agent.name"
-        :agent="agent"
-        :is-selected="agentsStore.selectedAgentName === agent.name"
-        @select="agentsStore.selectAgent(agent.name)"
-        @toggle-enabled="agentsStore.toggleAgentEnabled(agent.name)"
-      />
-    </template>
+  <div class="flex flex-col gap-3">
+    <AgentItem
+      v-for="agent in agents"
+      :key="agent.name"
+      :agent="agent"
+      :server-count="getServerCount(agent)"
+      @select="handleSelect(agent.name)"
+    />
   </div>
 </template>

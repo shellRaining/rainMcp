@@ -1,62 +1,66 @@
 <script setup lang="ts">
-import { Settings, Check } from 'lucide-vue-next';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import AgentIcon from './AgentIcon.vue';
 import type { SupportedAgent } from '@/types/mcp';
 import { AGENT_DISPLAY_NAMES } from '@/types/mcp';
 
-const props = defineProps<{
+defineProps<{
   agent: SupportedAgent;
-  isSelected: boolean;
+  serverCount: number;
 }>();
 
 const emit = defineEmits<{
   select: [];
-  toggleEnabled: [];
 }>();
 
 function handleClick() {
   emit('select');
 }
-
-function handleSwitchClick(e: Event) {
-  e.stopPropagation();
-  emit('toggleEnabled');
-}
 </script>
 
 <template>
   <div
-    :class="
-      cn(
-        'group flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors',
-        'hover:bg-accent',
-        isSelected && 'bg-accent'
-      )
-    "
+    class="px-4 py-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer transition-colors agent-card"
     @click="handleClick"
   >
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-medium truncate">
+    <div class="flex items-center gap-3">
+      <AgentIcon :agent-type="agent.agent_type" :size="24" class="text-foreground shrink-0" />
+
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <span class="font-medium truncate">
           {{ AGENT_DISPLAY_NAMES[agent.agent_type] || agent.name }}
         </span>
-        <Badge v-if="agent.is_configured" variant="secondary" class="text-xs px-1.5 py-0">
-          <Check class="h-3 w-3" />
+        <Badge
+          v-if="agent.is_configured"
+          variant="secondary"
+          class="text-xs shrink-0 badge-configured"
+        >
+          Configured
         </Badge>
       </div>
-      <div class="flex items-center gap-1 mt-0.5">
-        <Settings class="h-3 w-3 text-muted-foreground" />
-        <span class="text-xs text-muted-foreground truncate">
-          {{
-            agent.mcp_config
-              ? `${Object.keys(agent.mcp_config.servers || {}).length} servers`
-              : 'No config'
-          }}
-        </span>
+
+      <div class="flex items-center gap-1 text-muted-foreground shrink-0">
+        <span class="text-lg font-semibold tabular-nums">{{ serverCount }}</span>
+        <span class="text-xs server-label">servers</span>
       </div>
     </div>
-    <Switch :checked="agent.enabled" @click="handleSwitchClick" />
   </div>
 </template>
+
+<style scoped>
+.agent-card {
+  container-type: inline-size;
+}
+
+@container (max-width: 280px) {
+  .badge-configured {
+    display: none;
+  }
+}
+
+@container (max-width: 200px) {
+  .server-label {
+    display: none;
+  }
+}
+</style>

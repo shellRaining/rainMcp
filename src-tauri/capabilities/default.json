@@ -4,10 +4,10 @@
   "description": "Capability for the main window",
   "windows": ["main"],
   "permissions": [
-    "core:default",
-    "core:window:allow-start-dragging",
-    "opener:default",
-    "log:default",
+    "core:webview:allow-create-webview-window",
+    "core:webview:allow-webview-close",
+    "core:webview:allow-webview-position",
+    "core:webview:allow-webview-size",
     "clipboard-manager:allow-write-text"
   ]
 }

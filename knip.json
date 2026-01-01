@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": ["src/main.ts"],
+  "project": ["src/**/*.{ts,tsx,js,jsx,vue}"],
+  "ignore": [
+    "dist/**",
+    "node_modules/**",
+    "src-tauri/target/**",
+    "src/components/ui/**",
+    "src/types/generated.ts",
+    "src/types/mcp.ts"
+  ]
+}

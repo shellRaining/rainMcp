@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { SupportedAgent, McpConfig } from '@/types/mcp';
+import type { SupportedAgent, AgentServers } from '@/types/mcp';
 import {
   getSupportedAgents,
   updateEnabledAgents,
@@ -72,7 +72,7 @@ export const useAgentsStore = defineStore('agents', () => {
     }
   }
 
-  async function updateMcpConfig(agentName: string, config: McpConfig) {
+  async function updateMcpConfig(agentName: string, config: AgentServers) {
     try {
       await updateAgentMcpConfig(agentName, config);
       const agent = agents.value.find((a) => a.name === agentName);

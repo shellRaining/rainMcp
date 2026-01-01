@@ -44,7 +44,11 @@ rainMcp/
 │   ├── composables/     # 组合式函数
 │   ├── stores/          # Pinia 状态管理
 │   ├── utils/           # 工具函数
-│   ├── views/           # 视图组件
+│   ├── views/           # 视图组件（按功能模块分组）
+│   │   ├── overview/    # 主仪表板
+│   │   ├── agents/      # Agents 相关视图
+│   │   ├── servers/     # Servers 相关视图
+│   │   └── settings/    # Settings 相关视图
 │   ├── styles/          # 全局样式
 │   ├── App.vue          # 根组件
 │   └── main.ts          # 入口文件
