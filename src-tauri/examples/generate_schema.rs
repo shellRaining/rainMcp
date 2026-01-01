@@ -2,7 +2,10 @@
 //!
 //! 运行: cargo run --example generate_schema
 
-use rain_mcp_lib::mcp::{AgentType, McpConfig, McpServerConfig, SupportedAgent};
+use rain_mcp_lib::mcp::registry::SchemaStore;
+use rain_mcp_lib::mcp::server_schema::ServerSchema;
+use rain_mcp_lib::mcp::user_server::UserServer;
+use rain_mcp_lib::mcp::{AgentServerEntry, AgentServers, AgentType, SupportedAgent};
 use schemars::{schema_for, JsonSchema};
 use serde::Serialize;
 use std::fs;
@@ -13,9 +16,13 @@ use std::path::Path;
 #[serde(rename_all = "camelCase")]
 struct AllTypes {
     agent_type: AgentType,
-    mcp_server_config: McpServerConfig,
-    mcp_config: McpConfig,
+    agent_server_entry: AgentServerEntry,
+    agent_servers: AgentServers,
     supported_agent: SupportedAgent,
+    // Schema store types
+    user_server: UserServer,
+    server_schema: ServerSchema,
+    schema_store: SchemaStore,
 }
 
 fn main() {

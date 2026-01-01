@@ -3,7 +3,7 @@ use std::fs;
 use rstest::rstest;
 use tempfile::TempDir;
 
-use crate::mcp::{get_agent_mcp_config_command, McpServerConfig};
+use crate::mcp::{get_agent_mcp_config_command, AgentServerEntry};
 
 use super::fixtures::{test_env, CLAUDE_CODE_CONFIG_JSON, OPENAI_CODEX_CONFIG_TOML};
 use super::EnvGuard;
@@ -22,7 +22,7 @@ fn get_agent_mcp_config_command_reads_claude_code(
 
     let server = config.servers.get("server-name").unwrap();
     match server {
-        McpServerConfig::Local(local) => {
+        AgentServerEntry::Local(local) => {
             assert_eq!(local.command, "npx");
             assert_eq!(
                 local.args.clone().unwrap(),
@@ -36,7 +36,7 @@ fn get_agent_mcp_config_command_reads_claude_code(
 
     let remote_server = config.servers.get("remote").unwrap();
     match remote_server {
-        McpServerConfig::Remote(remote) => {
+        AgentServerEntry::Remote(remote) => {
             assert_eq!(remote.url, "https://mcp.example.com/mcp");
             assert_eq!(
                 remote.headers.as_ref().unwrap().get("Authorization").unwrap(),
@@ -62,7 +62,7 @@ fn get_agent_mcp_config_command_reads_openai_codex(
 
     let server = config.servers.get("context7").unwrap();
     match server {
-        McpServerConfig::Local(local) => {
+        AgentServerEntry::Local(local) => {
             assert_eq!(local.command, "npx");
             assert_eq!(
                 local.args.clone().unwrap(),
@@ -76,7 +76,7 @@ fn get_agent_mcp_config_command_reads_openai_codex(
 
     let remote_server = config.servers.get("figma").unwrap();
     match remote_server {
-        McpServerConfig::Remote(remote) => {
+        AgentServerEntry::Remote(remote) => {
             assert_eq!(remote.url, "https://mcp.figma.com/mcp");
             assert!(remote.headers.is_none());
             assert_eq!(remote.base.timeout, None);

@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::mcp::user_server::UserServer;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClientConfigItem {
     pub enabled: bool,
@@ -12,7 +14,11 @@ pub struct ClientConfigItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AppConfig {
+    #[serde(default)]
     pub clients: HashMap<String, ClientConfigItem>,
+
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub user_servers: Vec<UserServer>,
 }
 
 pub fn get_app_config_path() -> Option<PathBuf> {

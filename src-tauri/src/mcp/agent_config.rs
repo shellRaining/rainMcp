@@ -1,11 +1,12 @@
+use super::user_server::UserServer;
 use super::{
-    AgentType, BaseMcpConfig, LocalMcpConfig, McpConfig, McpServerConfig, RemoteMcpConfig,
+    AgentServerEntry, AgentServers, AgentType, BaseServerEntry, LocalServerEntry, RemoteServerEntry,
 };
 use std::collections::HashMap;
 use std::path::Path;
 
 /// 转换通用 JSON 配置到内部格式
-fn convert_generic_server_config(value: serde_json::Value) -> Result<McpServerConfig, String> {
+fn convert_generic_server_config(value: serde_json::Value) -> Result<AgentServerEntry, String> {
     // 尝试解析为对象
     let obj = value.as_object().ok_or_else(|| "Server config must be an object".to_string())?;
 
@@ -28,8 +29,8 @@ fn convert_generic_server_config(value: serde_json::Value) -> Result<McpServerCo
             .and_then(|v| v.as_u64())
             .map(|v| v as u32);
 
-        Ok(McpServerConfig::Local(LocalMcpConfig {
-            base: BaseMcpConfig { timeout },
+        Ok(AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout },
             command,
             args,
             env,
@@ -51,8 +52,8 @@ fn convert_generic_server_config(value: serde_json::Value) -> Result<McpServerCo
             .and_then(|v| v.as_u64())
             .map(|v| v as u32);
 
-        Ok(McpServerConfig::Remote(RemoteMcpConfig {
-            base: BaseMcpConfig { timeout },
+        Ok(AgentServerEntry::Remote(RemoteServerEntry {
+            base: BaseServerEntry { timeout },
             url,
             headers,
         }))
@@ -62,7 +63,7 @@ fn convert_generic_server_config(value: serde_json::Value) -> Result<McpServerCo
 }
 
 /// 解析通用 JSON 格式（大多数 agent）
-fn parse_generic_json_config(path: &Path) -> Result<McpConfig, String> {
+fn parse_generic_json_config(path: &Path) -> Result<AgentServers, String> {
     let content =
         std::fs::read_to_string(path).map_err(|e| format!("Failed to read config file: {}", e))?;
 
@@ -83,11 +84,11 @@ fn parse_generic_json_config(path: &Path) -> Result<McpConfig, String> {
         servers.insert(name, server_config);
     }
 
-    Ok(McpConfig { servers })
+    Ok(AgentServers { servers })
 }
 
 /// 解析 Claude Code 格式
-fn parse_claude_code_config(path: &Path) -> Result<McpConfig, String> {
+fn parse_claude_code_config(path: &Path) -> Result<AgentServers, String> {
     let content =
         std::fs::read_to_string(path).map_err(|e| format!("Failed to read config file: {}", e))?;
 
@@ -108,11 +109,11 @@ fn parse_claude_code_config(path: &Path) -> Result<McpConfig, String> {
         servers.insert(name, server_config);
     }
 
-    Ok(McpConfig { servers })
+    Ok(AgentServers { servers })
 }
 
 /// 解析 TOML 格式（OpenAI Codex）
-fn parse_toml_config(path: &Path) -> Result<McpConfig, String> {
+fn parse_toml_config(path: &Path) -> Result<AgentServers, String> {
     let content =
         std::fs::read_to_string(path).map_err(|e| format!("Failed to read config file: {}", e))?;
 
@@ -136,12 +137,12 @@ fn parse_toml_config(path: &Path) -> Result<McpConfig, String> {
         servers.insert(name.clone(), server_config);
     }
 
-    Ok(McpConfig { servers })
+    Ok(AgentServers { servers })
 }
 
 /// 统一读取接口
-pub fn read_agent_config(agent: AgentType) -> Result<McpConfig, String> {
-    let path = super::paths::get_global_config_path(agent)?;
+pub fn read_agent_config(agent: AgentType) -> Result<AgentServers, String> {
+    let path = super::agent::get_global_config_path(agent)?;
 
     if !path.exists() {
         return Err(format!("Config file not found: {:?}", path));
@@ -156,7 +157,7 @@ pub fn read_agent_config(agent: AgentType) -> Result<McpConfig, String> {
 
 /// 获取指定 server 的原始配置字符串（包含 server 名称作为 key）
 pub fn get_server_raw_config(agent: AgentType, server_name: &str) -> Result<String, String> {
-    let path = super::paths::get_global_config_path(agent)?;
+    let path = super::agent::get_global_config_path(agent)?;
 
     if !path.exists() {
         return Err(format!("Config file not found: {:?}", path));
@@ -203,15 +204,15 @@ pub fn get_server_raw_config(agent: AgentType, server_name: &str) -> Result<Stri
     }
 }
 
-fn convert_server_config_to_value(config: &McpServerConfig) -> Result<serde_json::Value, String> {
+fn convert_server_config_to_value(config: &AgentServerEntry) -> Result<serde_json::Value, String> {
     match config {
-        McpServerConfig::Local(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
-        McpServerConfig::Remote(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
+        AgentServerEntry::Local(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
+        AgentServerEntry::Remote(c) => serde_json::to_value(c).map_err(|e| e.to_string()),
     }
 }
 
-pub fn save_agent_config(agent: AgentType, config: McpConfig) -> Result<(), String> {
-    let path = super::paths::get_global_config_path(agent)?;
+pub fn save_agent_config(agent: AgentType, config: AgentServers) -> Result<(), String> {
+    let path = super::agent::get_global_config_path(agent)?;
 
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -276,4 +277,27 @@ pub fn save_agent_config(agent: AgentType, config: McpConfig) -> Result<(), Stri
     }
 
     Ok(())
+}
+
+/// Add a server to agent's configuration
+pub fn add_server_to_agent(
+    agent: AgentType,
+    server: &UserServer,
+    server_name: Option<String>,
+) -> Result<(), String> {
+    let name = server_name.unwrap_or_else(|| server.name.clone());
+
+    // Read existing config or create new one
+    let mut agent_servers = match read_agent_config(agent) {
+        Ok(c) => c,
+        Err(_) => AgentServers { servers: HashMap::new() },
+    };
+
+    // Check if server already exists
+    if agent_servers.servers.contains_key(&name) {
+        return Err(format!("Server '{}' already exists in agent config", name));
+    }
+
+    agent_servers.servers.insert(name, server.config.clone());
+    save_agent_config(agent, agent_servers)
 }

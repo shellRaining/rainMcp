@@ -5,8 +5,8 @@ use rstest::rstest;
 use tempfile::TempDir;
 
 use crate::mcp::{
-    update_agent_mcp_config_command, BaseMcpConfig, LocalMcpConfig, McpConfig, McpServerConfig,
-    RemoteMcpConfig,
+    update_agent_mcp_config_command, AgentServerEntry, AgentServers, BaseServerEntry,
+    LocalServerEntry, RemoteServerEntry,
 };
 
 use super::fixtures::{
@@ -28,8 +28,8 @@ fn update_agent_mcp_config_command_preserves_claude_code_fields(
     local_env.insert("API_KEY".to_string(), "value".to_string());
     servers.insert(
         "local-server".to_string(),
-        McpServerConfig::Local(LocalMcpConfig {
-            base: BaseMcpConfig { timeout: Some(120) },
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: Some(120) },
             command: "npx".to_string(),
             args: Some(vec!["-y".to_string(), "new-local".to_string()]),
             env: Some(local_env),
@@ -39,14 +39,14 @@ fn update_agent_mcp_config_command_preserves_claude_code_fields(
     headers.insert("Authorization".to_string(), "Bearer token".to_string());
     servers.insert(
         "remote-server".to_string(),
-        McpServerConfig::Remote(RemoteMcpConfig {
-            base: BaseMcpConfig { timeout: None },
+        AgentServerEntry::Remote(RemoteServerEntry {
+            base: BaseServerEntry { timeout: None },
             url: "https://mcp.example.com/mcp".to_string(),
             headers: Some(headers),
         }),
     );
 
-    let config = McpConfig { servers };
+    let config = AgentServers { servers };
     update_agent_mcp_config_command("claude-code".to_string(), config).unwrap();
 
     let updated: serde_json::Value =
@@ -88,8 +88,8 @@ fn update_agent_mcp_config_command_preserves_codex_fields(
     local_env.insert("TOKEN".to_string(), "value".to_string());
     servers.insert(
         "context7".to_string(),
-        McpServerConfig::Local(LocalMcpConfig {
-            base: BaseMcpConfig { timeout: None },
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: None },
             command: "npx".to_string(),
             args: Some(vec!["-y".to_string(), "new-context7".to_string()]),
             env: Some(local_env),
@@ -99,14 +99,14 @@ fn update_agent_mcp_config_command_preserves_codex_fields(
     headers.insert("Authorization".to_string(), "Bearer new".to_string());
     servers.insert(
         "remote".to_string(),
-        McpServerConfig::Remote(RemoteMcpConfig {
-            base: BaseMcpConfig { timeout: Some(45) },
+        AgentServerEntry::Remote(RemoteServerEntry {
+            base: BaseServerEntry { timeout: Some(45) },
             url: "https://mcp.example.com/mcp".to_string(),
             headers: Some(headers),
         }),
     );
 
-    let config = McpConfig { servers };
+    let config = AgentServers { servers };
     update_agent_mcp_config_command("openai-codex".to_string(), config).unwrap();
 
     let updated: toml::Value = toml::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
@@ -149,14 +149,14 @@ fn update_agent_mcp_config_command_creates_parent_dirs(
     let mut servers = HashMap::new();
     servers.insert(
         "local".to_string(),
-        McpServerConfig::Local(LocalMcpConfig {
-            base: BaseMcpConfig { timeout: None },
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: None },
             command: "npx".to_string(),
             args: Some(vec!["-y".to_string(), "server".to_string()]),
             env: None,
         }),
     );
-    let config = McpConfig { servers };
+    let config = AgentServers { servers };
     update_agent_mcp_config_command("cursor".to_string(), config).unwrap();
 
     assert!(config_path.exists());
@@ -172,7 +172,7 @@ fn update_agent_mcp_config_command_rejects_unknown_agent(
 ) {
     let (_temp_dir, _env_guard, _lock) = test_env;
 
-    let config = McpConfig { servers: HashMap::new() };
+    let config = AgentServers { servers: HashMap::new() };
     let err = update_agent_mcp_config_command("unknown-agent".to_string(), config).unwrap_err();
     assert!(err.contains("Unknown agent"));
 }
@@ -189,14 +189,14 @@ fn update_agent_mcp_config_command_errors_on_invalid_json(
     let mut servers = HashMap::new();
     servers.insert(
         "local".to_string(),
-        McpServerConfig::Local(LocalMcpConfig {
-            base: BaseMcpConfig { timeout: None },
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: None },
             command: "npx".to_string(),
             args: None,
             env: None,
         }),
     );
-    let config = McpConfig { servers };
+    let config = AgentServers { servers };
     let err = update_agent_mcp_config_command("claude-code".to_string(), config).unwrap_err();
     assert!(err.contains("Failed to parse JSON"));
 }
@@ -214,14 +214,14 @@ fn update_agent_mcp_config_command_errors_on_invalid_toml(
     let mut servers = HashMap::new();
     servers.insert(
         "local".to_string(),
-        McpServerConfig::Local(LocalMcpConfig {
-            base: BaseMcpConfig { timeout: None },
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: None },
             command: "npx".to_string(),
             args: None,
             env: None,
         }),
     );
-    let config = McpConfig { servers };
+    let config = AgentServers { servers };
     let err = update_agent_mcp_config_command("openai-codex".to_string(), config).unwrap_err();
     assert!(err.contains("Failed to parse TOML"));
 }

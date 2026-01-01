@@ -27,7 +27,14 @@ pub fn run() {
             mcp::update_enabled_agents_command,
             mcp::get_app_config_command,
             mcp::update_app_config_command,
-            mcp::open_config_file_command
+            mcp::open_config_file_command,
+            mcp::refresh_schema_store_command,
+            mcp::get_schema_store_command,
+            mcp::get_user_servers_command,
+            mcp::add_user_server_command,
+            mcp::update_user_server_command,
+            mcp::delete_user_server_command,
+            mcp::add_server_to_agent_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

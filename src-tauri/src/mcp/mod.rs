@@ -1,23 +1,36 @@
-pub mod parser;
-pub mod paths;
+//! MCP (Model Context Protocol) module
+//!
+//! This module handles MCP server configuration for various AI coding agents.
+
+pub mod agent;
+pub mod agent_config;
+pub mod registry;
+pub mod server_schema;
+pub mod user_server;
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 use crate::config::{load_app_config, save_app_config, AppConfig};
 
+// Re-export commonly used types
+pub use agent::{get_all_agent_types, parse_agent_name, AgentType, SupportedAgent};
+
+// ============================================================================
+// Agent server entry types (internal representation of agent config)
+// ============================================================================
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct BaseMcpConfig {
+pub struct BaseServerEntry {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct LocalMcpConfig {
+pub struct LocalServerEntry {
     #[serde(flatten)]
-    pub base: BaseMcpConfig,
+    pub base: BaseServerEntry,
 
     pub command: String,
 
@@ -29,9 +42,9 @@ pub struct LocalMcpConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct RemoteMcpConfig {
+pub struct RemoteServerEntry {
     #[serde(flatten)]
-    pub base: BaseMcpConfig,
+    pub base: BaseServerEntry,
 
     pub url: String,
 
@@ -41,60 +54,24 @@ pub struct RemoteMcpConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "lowercase")]
-pub enum McpServerConfig {
-    Local(LocalMcpConfig),
-    Remote(RemoteMcpConfig),
+pub enum AgentServerEntry {
+    Local(LocalServerEntry),
+    Remote(RemoteServerEntry),
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct McpConfig {
-    pub servers: HashMap<String, McpServerConfig>,
+pub struct AgentServers {
+    pub servers: HashMap<String, AgentServerEntry>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Hash)]
-pub enum AgentType {
-    ClaudeCode,
-    Cursor,
-    Windsurf,
-    Cline,
-    ClaudeDesktop,
-    RooCode,
-    Trae,
-    GeminiCli,
-    Kiro,
-    OpenAiCodex,
-}
-
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct SupportedAgent {
-    pub agent_type: AgentType,
-    pub name: String,
-    pub config_path: PathBuf,
-    pub is_configured: bool,
-    pub enabled: bool,
-    pub mcp_config: Option<McpConfig>,
-}
-
-/// Returns all supported agent types
-fn get_all_agent_types() -> Vec<AgentType> {
-    vec![
-        AgentType::ClaudeCode,
-        AgentType::Cursor,
-        AgentType::Windsurf,
-        AgentType::Cline,
-        AgentType::ClaudeDesktop,
-        AgentType::RooCode,
-        AgentType::Trae,
-        AgentType::GeminiCli,
-        AgentType::Kiro,
-        AgentType::OpenAiCodex,
-    ]
-}
+// ============================================================================
+// Tauri commands
+// ============================================================================
 
 #[tauri::command]
-pub fn get_agent_mcp_config_command(agent_name: String) -> Result<McpConfig, String> {
+pub fn get_agent_mcp_config_command(agent_name: String) -> Result<AgentServers, String> {
     let agent = parse_agent_name(&agent_name)?;
-    parser::read_agent_config(agent)
+    agent_config::read_agent_config(agent)
 }
 
 #[tauri::command]
@@ -103,7 +80,7 @@ pub fn get_server_raw_config_command(
     server_name: String,
 ) -> Result<String, String> {
     let agent = parse_agent_name(&agent_name)?;
-    parser::get_server_raw_config(agent, &server_name)
+    agent_config::get_server_raw_config(agent, &server_name)
 }
 
 #[tauri::command]
@@ -113,11 +90,12 @@ pub fn get_supported_agents_command() -> Result<Vec<SupportedAgent>, String> {
     let mut supported_agents = Vec::new();
 
     for agent in agents {
-        let path = paths::get_global_config_path(agent)
+        let path = agent::get_global_config_path(agent)
             .map_err(|e| format!("Error getting path for {:?}: {}", agent, e))?;
 
         let is_configured = path.exists();
-        let mcp_config = if is_configured { parser::read_agent_config(agent).ok() } else { None };
+        let mcp_config =
+            if is_configured { agent_config::read_agent_config(agent).ok() } else { None };
 
         let agent_name = format!("{:?}", agent);
         let enabled = app_config.clients.get(&agent_name).map(|c| c.enabled).unwrap_or(false);
@@ -181,10 +159,10 @@ pub fn update_enabled_agents_command(enabled_agents: Vec<String>) -> Result<(), 
 #[tauri::command]
 pub fn update_agent_mcp_config_command(
     agent_name: String,
-    config: McpConfig,
+    config: AgentServers,
 ) -> Result<(), String> {
     let agent = parse_agent_name(&agent_name)?;
-    parser::save_agent_config(agent, config)
+    agent_config::save_agent_config(agent, config)
 }
 
 #[tauri::command]
@@ -200,7 +178,7 @@ pub fn update_app_config_command(config: AppConfig) -> Result<(), String> {
 #[tauri::command]
 pub fn open_config_file_command(agent_name: String) -> Result<(), String> {
     let agent = parse_agent_name(&agent_name)?;
-    let path = paths::get_global_config_path(agent)?;
+    let path = agent::get_global_config_path(agent)?;
 
     if !path.exists() {
         if let Some(parent) = path.parent() {
@@ -221,20 +199,96 @@ pub fn open_config_file_command(agent_name: String) -> Result<(), String> {
     open::that(path).map_err(|e| e.to_string())
 }
 
-fn parse_agent_name(name: &str) -> Result<AgentType, String> {
-    match name.to_lowercase().as_str() {
-        "claude-code" | "claude_code" | "claudecode" => Ok(AgentType::ClaudeCode),
-        "cursor" => Ok(AgentType::Cursor),
-        "windsurf" => Ok(AgentType::Windsurf),
-        "cline" => Ok(AgentType::Cline),
-        "claude-desktop" | "claude_desktop" | "claudedesktop" => Ok(AgentType::ClaudeDesktop),
-        "roo-code" | "roo_code" | "roocode" => Ok(AgentType::RooCode),
-        "trae" => Ok(AgentType::Trae),
-        "gemini-cli" | "gemini_cli" | "geminicli" => Ok(AgentType::GeminiCli),
-        "kiro" => Ok(AgentType::Kiro),
-        "openai-codex" | "openai_codex" | "openaicodex" | "codex" => Ok(AgentType::OpenAiCodex),
-        _ => Err(format!("Unknown agent: {}", name)),
+#[tauri::command]
+pub async fn refresh_schema_store_command() -> Result<registry::SchemaStore, String> {
+    registry::refresh_schema_store_impl().await
+}
+
+#[tauri::command]
+pub fn get_schema_store_command() -> Result<registry::SchemaStore, String> {
+    registry::load_schema_store()
+}
+
+#[tauri::command]
+pub fn get_user_servers_command() -> Result<Vec<user_server::UserServer>, String> {
+    let app_config = load_app_config();
+    Ok(app_config.user_servers)
+}
+
+#[tauri::command]
+pub fn add_user_server_command(
+    server: user_server::UserServer,
+) -> Result<user_server::UserServer, String> {
+    let mut app_config = load_app_config();
+
+    // Check for duplicate ID
+    if app_config.user_servers.iter().any(|s| s.id == server.id) {
+        return Err(format!("Server with ID '{}' already exists", server.id));
     }
+
+    // Add created_at timestamp if not provided
+    let server = if server.created_at.is_none() {
+        user_server::UserServer { created_at: Some(chrono::Utc::now().to_rfc3339()), ..server }
+    } else {
+        server
+    };
+
+    app_config.user_servers.push(server.clone());
+    save_app_config(&app_config)?;
+
+    Ok(server)
+}
+
+#[tauri::command]
+pub fn update_user_server_command(
+    server: user_server::UserServer,
+) -> Result<user_server::UserServer, String> {
+    let mut app_config = load_app_config();
+
+    let index = app_config
+        .user_servers
+        .iter()
+        .position(|s| s.id == server.id)
+        .ok_or_else(|| format!("Server with ID '{}' not found", server.id))?;
+
+    app_config.user_servers[index] = server.clone();
+    save_app_config(&app_config)?;
+
+    Ok(server)
+}
+
+#[tauri::command]
+pub fn delete_user_server_command(server_id: String) -> Result<(), String> {
+    let mut app_config = load_app_config();
+
+    let index = app_config
+        .user_servers
+        .iter()
+        .position(|s| s.id == server_id)
+        .ok_or_else(|| format!("Server with ID '{}' not found", server_id))?;
+
+    app_config.user_servers.remove(index);
+    save_app_config(&app_config)?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn add_server_to_agent_command(
+    agent_name: String,
+    server_id: String,
+    server_name: Option<String>,
+) -> Result<(), String> {
+    let agent = parse_agent_name(&agent_name)?;
+    let app_config = load_app_config();
+
+    let server = app_config
+        .user_servers
+        .iter()
+        .find(|s| s.id == server_id)
+        .ok_or_else(|| format!("User server with ID '{}' not found", server_id))?;
+
+    agent_config::add_server_to_agent(agent, server, server_name)
 }
 
 #[cfg(test)]
