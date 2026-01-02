@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, onBeforeMount } from 'vue';
+import { computed, watch, onMounted, onBeforeMount, onBeforeUnmount } from 'vue';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { emit as emitEvent } from '@tauri-apps/api/event';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,29 @@ onMounted(async () => {
   if (!serversStore.schemaStore || serversStore.serverSchemas.length === 0) {
     await serversStore.init();
   }
+
+  // 添加鼠标侧键导航监听器
+  window.addEventListener('mousedown', handleMouseNavigation);
 });
+
+// 清理事件监听器
+onBeforeUnmount(() => {
+  window.removeEventListener('mousedown', handleMouseNavigation);
+});
+
+// 处理鼠标侧键导航
+function handleMouseNavigation(event: MouseEvent) {
+  // button === 3: 鼠标后退键
+  // button === 4: 鼠标前进键
+  if (event.button === 3) {
+    // 后退键：如果不在第一步且未提交中，执行后退
+    if (form.currentStep.value !== 'select-type' && !form.isSubmitting.value) {
+      event.preventDefault();
+      form.goBack();
+    }
+  }
+  // 暂不实现前进功能，因为步骤是单向流程
+}
 
 // Transition name based on direction
 const transitionName = computed(() => {

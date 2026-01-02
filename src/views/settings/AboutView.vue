@@ -1,7 +1,20 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { ExternalLink } from 'lucide-vue-next';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { getVersion } from '@tauri-apps/api/app';
 import { logger } from '@/utils/logger';
+
+const version = ref<string>('');
+
+onMounted(async () => {
+  try {
+    version.value = await getVersion();
+  } catch (error) {
+    logger.error('Failed to get app version:', error);
+    version.value = 'Unknown';
+  }
+});
 
 async function openGitHub() {
   try {
@@ -30,7 +43,7 @@ async function openGitHub() {
         <div class="space-y-1 text-sm">
           <p>
             <span class="text-muted-foreground">Version:</span>
-            <span class="ml-2 font-mono">0.1.0</span>
+            <span class="ml-2 font-mono">{{ version || 'Loading...' }}</span>
           </p>
         </div>
 

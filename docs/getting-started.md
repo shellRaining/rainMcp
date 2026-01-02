@@ -25,10 +25,12 @@ rainMcp 是一个跨平台的 MCP（Model Context Protocol）配置管理器。
 | TypeScript      | 5.x  | 类型安全          |
 | Vite            | 6.x  | 构建工具          |
 | Pinia           | 3.x  | 状态管理          |
+| Vue Router      | 4.x  | 路由管理          |
 | Reka UI         | 2.7  | 无头 UI 组件库    |
 | UnoCSS          | 66.x | 原子化 CSS        |
 | VueUse          | 14.x | 组合式 API 工具集 |
 | Lucide Vue Next | -    | 图标库            |
+| Fuse.js         | 7.x  | 模糊搜索          |
 
 ### 2.2 后端
 
@@ -42,6 +44,8 @@ rainMcp 是一个跨平台的 MCP（Model Context Protocol）配置管理器。
 | reqwest            | 0.12         | HTTP 客户端      |
 | dirs               | 6.0          | 跨平台路径管理   |
 | chrono             | -            | 时间处理         |
+| semver             | 1.0          | 语义化版本处理   |
+| tauri-plugin-decorum | 1.1.1      | 窗口装饰插件     |
 
 ### 2.3 开发工具
 
@@ -359,7 +363,7 @@ export async function addServerToAgent(
 
 ### 5.2 状态管理（stores/）
 
-使用 Pinia 进行状态管理，采用 Composition API 风格：
+使用 Pinia 进行状态管理，采用 Composition API 风格。Pinia 主要用于主窗口内部的状态管理和视图切换，不负责窗口间的路由（窗口路由由 vue-router 处理）。
 
 app.ts - 应用导航状态：
 
@@ -431,9 +435,10 @@ UI 组件（components/ui/）：
 | ServersOverviewView  | views/servers/ServersOverviewView.vue   | Server 列表      |
 | ServerDetailView     | views/servers/ServerDetailView.vue      | Server 详情      |
 | SettingsOverviewView | views/settings/SettingsOverviewView.vue | Settings 主页    |
+| AddServerWindow      | views/add-server/AddServerWindow.vue    | 添加服务器独立窗口 |
 | 其他设置页面         | views/settings/                         | 主题、关于等设置 |
 
-注意：项目使用 Pinia 状态管理实现视图切换，而非 Vue Router。
+注意：项目同时使用 vue-router 和 Pinia。vue-router 用于窗口级别的路由（主窗口和添加服务器独立窗口），Pinia app store 用于主窗口内部的视图切换。
 
 ## 6. 核心概念
 
