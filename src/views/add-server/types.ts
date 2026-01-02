@@ -4,5 +4,6 @@ export type Step =
   | 'select-package'
   | 'configure'
   | 'custom-form'
-  | 'remote-form';
-export type ServerType = 'registry' | 'custom' | 'remote';
+  | 'remote-form'
+  | 'clipboard-import';
+export type ServerType = 'registry' | 'custom' | 'remote' | 'clipboard';

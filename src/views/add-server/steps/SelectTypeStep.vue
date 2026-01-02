@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Globe, Terminal, Package } from 'lucide-vue-next';
+import { Globe, Terminal, Package, ClipboardPaste } from 'lucide-vue-next';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ServerType } from '../types';
 
 function handleSelect(type: ServerType) {
@@ -12,8 +13,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex-1 py-6 px-4">
-    <div class="max-w-2xl mx-auto space-y-4">
+  <ScrollArea class="h-full">
+    <div class="py-6 px-4">
+      <div class="max-w-2xl mx-auto space-y-4">
       <div class="text-center mb-6">
         <h2 class="text-xl font-semibold mb-2">Choose how to add a server</h2>
         <p class="text-sm text-muted-foreground">
@@ -75,7 +77,26 @@ const emit = defineEmits<{
             </div>
           </div>
         </button>
+
+        <!-- Import from Clipboard -->
+        <button
+          class="p-6 rounded-lg border-2 hover:border-primary hover:bg-accent/50 transition-all text-left group"
+          @click="handleSelect('clipboard')"
+        >
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+              <ClipboardPaste class="h-6 w-6 text-primary" />
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-lg mb-1">Import from Clipboard</h3>
+              <p class="text-sm text-muted-foreground">
+                Paste and import server configuration from clipboard
+              </p>
+            </div>
+          </div>
+        </button>
+        </div>
       </div>
     </div>
-  </div>
+  </ScrollArea>
 </template>

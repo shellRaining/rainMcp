@@ -15,6 +15,8 @@ import SelectPackageStep from './steps/SelectPackageStep.vue';
 import ConfigureStep from './steps/ConfigureStep.vue';
 import CustomFormStep from './steps/CustomFormStep.vue';
 import RemoteFormStep from './steps/RemoteFormStep.vue';
+import ClipboardImportStep from './steps/ClipboardImportStep.vue';
+import type { ParsedServer } from './composables/useClipboardParser';
 
 const currentWindow = getCurrentWebviewWindow();
 const serversStore = useServersStore();
@@ -81,6 +83,16 @@ async function handleSubmit() {
     // Emit event to main window
     await emitEvent('server-added', {});
     // Close window
+    await currentWindow.close();
+  }
+}
+
+// Handle clipboard import submit
+async function handleClipboardSubmit(servers: ParsedServer[]) {
+  const success = await form.submitClipboardServers(servers);
+
+  if (success) {
+    await emitEvent('server-added', {});
     await currentWindow.close();
   }
 }
@@ -212,6 +224,15 @@ watch(() => currentWindow, () => {
           @update:remote-url="(v) => (form.remoteUrl.value = v)"
           @update:remote-headers="(v) => (form.remoteHeaders.value = v)"
           @submit="handleSubmit"
+        />
+
+        <!-- Clipboard Import Step -->
+        <ClipboardImportStep
+          v-else-if="form.currentStep.value === 'clipboard-import'"
+          key="clipboard-import"
+          class="absolute inset-0"
+          :is-submitting="form.isSubmitting.value"
+          @submit="handleClipboardSubmit"
         />
       </Transition>
     </main>

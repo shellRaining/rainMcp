@@ -3,5 +3,5 @@
   "identifier": "add-server",
   "description": "Capability for the add-server window",
   "windows": ["add-server"],
-  "permissions": []
+  "permissions": ["clipboard-manager:allow-read-text"]
 }

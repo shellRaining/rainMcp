@@ -10,6 +10,7 @@ import type {
 } from '@/types/mcp';
 import { useServersStore } from '@/stores/servers';
 import { logger } from '@/utils/logger';
+import type { ParsedServer } from './useClipboardParser';
 
 const PAGE_SIZE = 50;
 
@@ -158,6 +159,8 @@ export function useAddServerForm() {
       currentStep.value = 'custom-form';
     } else if (type === 'remote') {
       currentStep.value = 'remote-form';
+    } else if (type === 'clipboard') {
+      currentStep.value = 'clipboard-import';
     }
   }
 
@@ -204,6 +207,7 @@ export function useAddServerForm() {
       case 'select-schema':
       case 'custom-form':
       case 'remote-form':
+      case 'clipboard-import':
         currentStep.value = 'select-type';
         selectedType.value = null;
         break;
@@ -414,6 +418,30 @@ export function useAddServerForm() {
     }
   }
 
+  async function submitClipboardServers(servers: ParsedServer[]) {
+    if (servers.length === 0) return false;
+
+    isSubmitting.value = true;
+    try {
+      for (const server of servers) {
+        await serversStore.addServer({
+          name: server.name,
+          config: server.config,
+          origin: {
+            originType: 'custom',
+          },
+        });
+      }
+
+      return true;
+    } catch (error) {
+      logger.error('Failed to add servers from clipboard:', error);
+      return false;
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
   // Reset form
   function resetForm() {
     currentStep.value = 'select-type';
@@ -469,6 +497,7 @@ export function useAddServerForm() {
     submitRegistryServer,
     submitCustomServer,
     submitRemoteServer,
+    submitClipboardServers,
     resetForm,
     parseEnvString,
     parseHeadersString,

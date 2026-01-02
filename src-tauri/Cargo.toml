@@ -1,6 +1,6 @@
 [package]
 name = "rain-mcp"
-version = "0.2.1"
+version = "0.2.2"
 description = "MCP configuration manager for coding agents"
 authors = ["shellraining"]
 edition = "2021"
