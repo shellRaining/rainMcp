@@ -16,7 +16,9 @@ import ConfigureStep from './steps/ConfigureStep.vue';
 import CustomFormStep from './steps/CustomFormStep.vue';
 import RemoteFormStep from './steps/RemoteFormStep.vue';
 import ClipboardImportStep from './steps/ClipboardImportStep.vue';
+import AiChatStep from './steps/AiChatStep.vue';
 import type { ParsedServer } from './composables/useClipboardParser';
+import type { GeneratedSchema } from '@/api/tauri';
 
 const currentWindow = getCurrentWebviewWindow();
 const serversStore = useServersStore();
@@ -95,6 +97,13 @@ async function handleClipboardSubmit(servers: ParsedServer[]) {
     await emitEvent('server-added', {});
     await currentWindow.close();
   }
+}
+
+// Handle AI schema submit - navigates to schema selection flow
+async function handleAiSubmit(schema: GeneratedSchema) {
+  // This will set the selected schema and navigate to select-package or configure step
+  await form.submitAiSchema(schema);
+  // Don't close window - user will continue with package selection and configuration
 }
 
 // Reset form when window closes
@@ -233,6 +242,15 @@ watch(() => currentWindow, () => {
           class="absolute inset-0"
           :is-submitting="form.isSubmitting.value"
           @submit="handleClipboardSubmit"
+        />
+
+        <!-- AI Chat Step -->
+        <AiChatStep
+          v-else-if="form.currentStep.value === 'ai-chat'"
+          key="ai-chat"
+          class="absolute inset-0"
+          :is-submitting="form.isSubmitting.value"
+          @submit="handleAiSubmit"
         />
       </Transition>
     </main>

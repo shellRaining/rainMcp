@@ -93,3 +93,55 @@ export async function setTrafficLightsInset(
 ): Promise<void> {
   return invoke('set_traffic_lights_inset_command', { windowLabel, x, y });
 }
+
+// ===== AI Agent APIs =====
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  toolCalls?: ToolCallInfo[];
+  generatedSchema?: GeneratedSchema;
+}
+
+export interface ToolCallInfo {
+  name: string;
+  status: 'pending' | 'running' | 'success' | 'failed';
+  resultPreview?: string;
+}
+
+export interface GeneratedSchema {
+  schema: import('@/types/mcp').ServerSchema;
+  confidence: number;
+  explanation: string;
+}
+
+// Stream event types
+export type StreamEvent =
+  | { type: 'text'; text: string }
+  | { type: 'toolCallStart'; name: string; argsPreview?: string }
+  | { type: 'toolCallEnd'; name: string; resultPreview?: string }
+  | { type: 'schema'; schema: GeneratedSchema }
+  | { type: 'done'; messageId: string }
+  | { type: 'error'; error: string };
+
+export async function agentChat(message: string): Promise<ChatMessage> {
+  return invoke('agent_chat_command', { message });
+}
+
+export async function agentChatStream(message: string): Promise<void> {
+  return invoke('agent_chat_stream_command', { message });
+}
+
+export async function agentReset(): Promise<void> {
+  return invoke('agent_reset_command');
+}
+
+export async function getOpenRouterApiKey(): Promise<string | null> {
+  return invoke('get_openrouter_api_key_command');
+}
+
+export async function setOpenRouterApiKey(apiKey: string): Promise<void> {
+  return invoke('set_openrouter_api_key_command', { apiKey });
+}

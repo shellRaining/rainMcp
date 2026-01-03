@@ -5,6 +5,7 @@ import router from './router';
 import App from './App.vue';
 import './styles/globals.css';
 import 'virtual:uno.css';
+import 'markstream-vue/index.css';
 
 attachConsole();
 

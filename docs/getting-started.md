@@ -34,18 +34,18 @@ rainMcp 是一个跨平台的 MCP（Model Context Protocol）配置管理器。
 
 ### 2.2 后端
 
-| 技术               | 版本         | 用途             |
-| ------------------ | ------------ | ---------------- |
-| Tauri              | 2.0          | 跨平台桌面框架   |
-| Rust               | 2021 edition | 后端语言         |
-| serde / serde_json | -            | JSON 序列化      |
-| toml               | -            | TOML 解析        |
-| schemars           | -            | JSON Schema 生成 |
-| reqwest            | 0.12         | HTTP 客户端      |
-| dirs               | 6.0          | 跨平台路径管理   |
-| chrono             | -            | 时间处理         |
-| semver             | 1.0          | 语义化版本处理   |
-| tauri-plugin-decorum | 1.1.1      | 窗口装饰插件     |
+| 技术                 | 版本         | 用途             |
+| -------------------- | ------------ | ---------------- |
+| Tauri                | 2.0          | 跨平台桌面框架   |
+| Rust                 | 2021 edition | 后端语言         |
+| serde / serde_json   | -            | JSON 序列化      |
+| toml                 | -            | TOML 解析        |
+| schemars             | -            | JSON Schema 生成 |
+| reqwest              | 0.12         | HTTP 客户端      |
+| dirs                 | 6.0          | 跨平台路径管理   |
+| chrono               | -            | 时间处理         |
+| semver               | 1.0          | 语义化版本处理   |
+| tauri-plugin-decorum | 1.1.1        | 窗口装饰插件     |
 
 ### 2.3 开发工具
 
@@ -428,15 +428,15 @@ UI 组件（components/ui/）：
 
 视图文件按功能模块组织到子目录中：
 
-| 视图                 | 路径                                    | 说明             |
-| -------------------- | --------------------------------------- | ---------------- |
-| OverviewView         | views/overview/OverviewView.vue         | 主仪表板         |
-| AgentsOverviewView   | views/agents/AgentsOverviewView.vue     | Agent 列表       |
-| ServersOverviewView  | views/servers/ServersOverviewView.vue   | Server 列表      |
-| ServerDetailView     | views/servers/ServerDetailView.vue      | Server 详情      |
-| SettingsOverviewView | views/settings/SettingsOverviewView.vue | Settings 主页    |
+| 视图                 | 路径                                    | 说明               |
+| -------------------- | --------------------------------------- | ------------------ |
+| OverviewView         | views/overview/OverviewView.vue         | 主仪表板           |
+| AgentsOverviewView   | views/agents/AgentsOverviewView.vue     | Agent 列表         |
+| ServersOverviewView  | views/servers/ServersOverviewView.vue   | Server 列表        |
+| ServerDetailView     | views/servers/ServerDetailView.vue      | Server 详情        |
+| SettingsOverviewView | views/settings/SettingsOverviewView.vue | Settings 主页      |
 | AddServerWindow      | views/add-server/AddServerWindow.vue    | 添加服务器独立窗口 |
-| 其他设置页面         | views/settings/                         | 主题、关于等设置 |
+| 其他设置页面         | views/settings/                         | 主题、关于等设置   |
 
 注意：项目同时使用 vue-router 和 Pinia。vue-router 用于窗口级别的路由（主窗口和添加服务器独立窗口），Pinia app store 用于主窗口内部的视图切换。
 

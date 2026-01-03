@@ -1,3 +1,4 @@
+pub mod agent;
 pub mod config;
 pub mod mcp;
 pub mod window;
@@ -72,7 +73,12 @@ pub fn run() {
             mcp::update_user_server_command,
             mcp::delete_user_server_command,
             mcp::add_server_to_agent_command,
-            window::set_traffic_lights_inset_command
+            window::set_traffic_lights_inset_command,
+            agent::agent_chat_command,
+            agent::agent_chat_stream_command,
+            agent::agent_reset_command,
+            agent::get_openrouter_api_key_command,
+            agent::set_openrouter_api_key_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

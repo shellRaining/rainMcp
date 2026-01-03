@@ -98,7 +98,9 @@ function canSubmit(): boolean {
           <h2 class="text-lg font-semibold">
             Detected {{ editableServers.length }} server{{ editableServers.length > 1 ? 's' : '' }}
           </h2>
-          <p class="text-sm text-muted-foreground">Review and edit the configuration before importing</p>
+          <p class="text-sm text-muted-foreground">
+            Review and edit the configuration before importing
+          </p>
         </div>
 
         <!-- Server Cards -->
@@ -137,7 +139,9 @@ function canSubmit(): boolean {
               </div>
 
               <!-- Config Details -->
-              <div class="text-sm space-y-1 text-muted-foreground font-mono bg-muted/50 p-3 rounded-md">
+              <div
+                class="text-sm space-y-1 text-muted-foreground font-mono bg-muted/50 p-3 rounded-md"
+              >
                 <template v-if="server.config.type === 'remote'">
                   <p class="break-all">
                     <span class="text-foreground">URL:</span> {{ server.config.url }}
@@ -148,9 +152,7 @@ function canSubmit(): boolean {
                   </p>
                 </template>
                 <template v-else>
-                  <p>
-                    <span class="text-foreground">Command:</span> {{ server.config.command }}
-                  </p>
+                  <p><span class="text-foreground">Command:</span> {{ server.config.command }}</p>
                   <p v-if="server.config.args && server.config.args.length > 0" class="break-all">
                     <span class="text-foreground">Args:</span> {{ server.config.args.join(' ') }}
                   </p>

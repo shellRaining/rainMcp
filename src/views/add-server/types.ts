@@ -5,5 +5,6 @@ export type Step =
   | 'configure'
   | 'custom-form'
   | 'remote-form'
-  | 'clipboard-import';
-export type ServerType = 'registry' | 'custom' | 'remote' | 'clipboard';
+  | 'clipboard-import'
+  | 'ai-chat';
+export type ServerType = 'registry' | 'custom' | 'remote' | 'clipboard' | 'ai';

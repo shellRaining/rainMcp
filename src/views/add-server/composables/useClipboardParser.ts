@@ -246,7 +246,12 @@ function suggestServerName(config: AgentServerEntry): string {
         return arg;
       }
     }
-    return config.command.split(/[/\\]/).pop()?.replace(/\.\w+$/, '') || 'local-server';
+    return (
+      config.command
+        .split(/[/\\]/)
+        .pop()
+        ?.replace(/\.\w+$/, '') || 'local-server'
+    );
   }
 
   return 'mcp-server';

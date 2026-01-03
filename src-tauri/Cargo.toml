@@ -1,6 +1,6 @@
 [package]
 name = "rain-mcp"
-version = "0.2.2"
+version = "0.3.0"
 description = "MCP configuration manager for coding agents"
 authors = ["shellraining"]
 edition = "2021"
@@ -33,6 +33,11 @@ tauri-plugin-clipboard-manager = "2.3.2"
 reqwest = { version = "0.12", features = ["json"] }
 chrono = { version = "0.4", features = ["serde"] }
 semver = "1.0"
+rig-core = { git = "https://github.com/0xPlaygrounds/rig", rev = "4f25952df6ff158cf363b2450ef821e85a796297" }
+uuid = { version = "1.0", features = ["v4"] }
+once_cell = "1.19"
+thiserror = "2.0"
+futures = "0.3.31"
 
 [dev-dependencies]
 tempfile = "3"

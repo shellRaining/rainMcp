@@ -19,6 +19,9 @@ pub struct AppConfig {
 
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub user_servers: Vec<UserServer>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub openrouter_api_key: Option<String>,
 }
 
 pub fn get_app_config_path() -> Option<PathBuf> {

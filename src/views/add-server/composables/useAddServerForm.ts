@@ -11,6 +11,7 @@ import type {
 import { useServersStore } from '@/stores/servers';
 import { logger } from '@/utils/logger';
 import type { ParsedServer } from './useClipboardParser';
+import type { GeneratedSchema } from '@/api/tauri';
 
 const PAGE_SIZE = 50;
 
@@ -31,6 +32,7 @@ export function useAddServerForm() {
 
   // Step management
   const currentStep = ref<Step>('select-type');
+  const stepHistory = ref<Step[]>([]); // History stack for back navigation
   const selectedType = ref<ServerType | null>(null);
   const isGoingForward = ref(true);
 
@@ -131,7 +133,8 @@ export function useAddServerForm() {
         .replace(/^-|-$/g, '');
     }
     // Extract last segment from name
-    const name = schema.name;
+    const name = schema.name || '';
+    if (!name) return 'mcp-server';
     const lastSlash = name.lastIndexOf('/');
     return lastSlash >= 0 ? name.slice(lastSlash + 1) : name;
   }
@@ -148,26 +151,33 @@ export function useAddServerForm() {
     envValues.value = defaults;
   }
 
+  // Helper: navigate to a new step and record history
+  function navigateTo(step: Step) {
+    stepHistory.value.push(currentStep.value);
+    currentStep.value = step;
+    isGoingForward.value = true;
+  }
+
   // Navigation functions
   function selectType(type: ServerType) {
     selectedType.value = type;
-    isGoingForward.value = true;
 
     if (type === 'registry') {
-      currentStep.value = 'select-schema';
+      navigateTo('select-schema');
     } else if (type === 'custom') {
-      currentStep.value = 'custom-form';
+      navigateTo('custom-form');
     } else if (type === 'remote') {
-      currentStep.value = 'remote-form';
+      navigateTo('remote-form');
     } else if (type === 'clipboard') {
-      currentStep.value = 'clipboard-import';
+      navigateTo('clipboard-import');
+    } else if (type === 'ai') {
+      navigateTo('ai-chat');
     }
   }
 
   function selectSchema(schema: ServerSchema) {
     selectedSchema.value = schema;
     selectedPackageIndex.value = 0;
-    isGoingForward.value = true;
 
     // Auto-fill server name
     serverName.value = extractServerName(schema);
@@ -177,19 +187,18 @@ export function useAddServerForm() {
     const totalOptions = packagesCount + remotesCount;
 
     if (totalOptions > 1) {
-      currentStep.value = 'select-package';
+      navigateTo('select-package');
     } else {
       // Initialize env defaults for first package
       if (schema.packages && schema.packages.length > 0) {
         initEnvDefaults(schema.packages[0]);
       }
-      currentStep.value = 'configure';
+      navigateTo('configure');
     }
   }
 
   function selectPackage(index: number) {
     selectedPackageIndex.value = index;
-    isGoingForward.value = true;
 
     // Initialize env defaults for selected package
     const schema = selectedSchema.value;
@@ -197,37 +206,21 @@ export function useAddServerForm() {
       initEnvDefaults(schema.packages[index]);
     }
 
-    currentStep.value = 'configure';
+    navigateTo('configure');
   }
 
   function goBack() {
     isGoingForward.value = false;
 
-    switch (currentStep.value) {
-      case 'select-schema':
-      case 'custom-form':
-      case 'remote-form':
-      case 'clipboard-import':
-        currentStep.value = 'select-type';
-        selectedType.value = null;
-        break;
-      case 'select-package':
-        currentStep.value = 'select-schema';
-        selectedPackageIndex.value = 0;
-        break;
-      case 'configure':
-        const packagesCount = selectedSchema.value?.packages?.length || 0;
-        const remotesCount = selectedSchema.value?.remotes?.length || 0;
-        const totalOptions = packagesCount + remotesCount;
-
-        if (totalOptions > 1) {
-          currentStep.value = 'select-package';
-        } else {
-          currentStep.value = 'select-schema';
-          selectedSchema.value = null;
-        }
-        break;
+    // Use history stack if available
+    if (stepHistory.value.length > 0) {
+      currentStep.value = stepHistory.value.pop()!;
+      return;
     }
+
+    // Fallback to select-type if no history
+    currentStep.value = 'select-type';
+    selectedType.value = null;
   }
 
   // Helper functions
@@ -442,9 +435,45 @@ export function useAddServerForm() {
     }
   }
 
+  async function submitAiSchema(generatedSchema: GeneratedSchema) {
+    if (!generatedSchema.schema) return false;
+
+    // Use the generated schema and go through the normal schema selection flow
+    const schema = generatedSchema.schema;
+
+    // Set the selected schema
+    selectedSchema.value = schema;
+    selectedPackageIndex.value = 0;
+
+    // Auto-fill server name
+    serverName.value = extractServerName(schema);
+
+    const packagesCount = schema.packages?.length || 0;
+    const remotesCount = schema.remotes?.length || 0;
+    const totalOptions = packagesCount + remotesCount;
+
+    if (totalOptions > 1) {
+      // Multiple options: go to package selection step
+      navigateTo('select-package');
+    } else if (totalOptions === 1) {
+      // Single option: go directly to configure step
+      if (schema.packages && schema.packages.length > 0) {
+        initEnvDefaults(schema.packages[0]);
+      }
+      navigateTo('configure');
+    } else {
+      // No packages or remotes - this shouldn't happen with valid schema
+      logger.error('Generated schema has no packages or remotes');
+      return false;
+    }
+
+    return true;
+  }
+
   // Reset form
   function resetForm() {
     currentStep.value = 'select-type';
+    stepHistory.value = [];
     selectedType.value = null;
     searchQuery.value = '';
     debouncedQuery.value = '';
@@ -498,6 +527,7 @@ export function useAddServerForm() {
     submitCustomServer,
     submitRemoteServer,
     submitClipboardServers,
+    submitAiSchema,
     resetForm,
     parseEnvString,
     parseHeadersString,
