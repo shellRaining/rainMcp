@@ -10,7 +10,8 @@ use crate::mcp::{
 };
 
 use super::fixtures::{
-    test_env, CLAUDE_CODE_CONFIG_WITH_FIELDS_JSON, OPENAI_CODEX_CONFIG_WITH_FIELDS_TOML,
+    test_env, CLAUDE_CODE_CONFIG_WITH_FIELDS_JSON, COPILOT_CLI_CONFIG_JSON,
+    OPENAI_CODEX_CONFIG_WITH_FIELDS_TOML,
 };
 use super::EnvGuard;
 
@@ -59,6 +60,7 @@ fn update_agent_mcp_config_command_preserves_claude_code_fields(
 
     let local = mcp_servers.get("local-server").and_then(|v| v.as_object()).unwrap();
     assert_eq!(local.get("command").and_then(|v| v.as_str()), Some("npx"));
+    assert_eq!(local.get("type").and_then(|v| v.as_str()), Some("stdio"));
     assert_eq!(local.get("timeout").and_then(|v| v.as_u64()), Some(120));
     let args = local.get("args").and_then(|v| v.as_array()).unwrap();
     assert_eq!(args.len(), 2);
@@ -68,6 +70,7 @@ fn update_agent_mcp_config_command_preserves_claude_code_fields(
     assert_eq!(env.get("API_KEY").and_then(|v| v.as_str()), Some("value"));
 
     let remote = mcp_servers.get("remote-server").and_then(|v| v.as_object()).unwrap();
+    assert_eq!(remote.get("type").and_then(|v| v.as_str()), Some("http"));
     assert_eq!(remote.get("url").and_then(|v| v.as_str()), Some("https://mcp.example.com/mcp"));
     let headers = remote.get("headers").and_then(|v| v.as_object()).unwrap();
     assert_eq!(headers.get("Authorization").and_then(|v| v.as_str()), Some("Bearer token"));
@@ -224,4 +227,44 @@ fn update_agent_mcp_config_command_errors_on_invalid_toml(
     let config = AgentServers { servers };
     let err = update_agent_mcp_config_command("openai-codex".to_string(), config).unwrap_err();
     assert!(err.contains("Failed to parse TOML"));
+}
+
+#[rstest]
+fn update_agent_mcp_config_command_preserves_copilot_cli_fields(
+    test_env: (TempDir, EnvGuard, std::sync::MutexGuard<'static, ()>),
+) {
+    let (temp_dir, _env_guard, _lock) = test_env;
+
+    let config_path = temp_dir.path().join(".copilot").join("mcp-config.json");
+    fs::create_dir_all(config_path.parent().unwrap()).unwrap();
+    fs::write(&config_path, COPILOT_CLI_CONFIG_JSON).unwrap();
+
+    let mut servers = HashMap::new();
+    servers.insert(
+        "filesystem".to_string(),
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: Some(5) },
+            command: "bunx".to_string(),
+            args: Some(vec!["-y".to_string(), "server-new".to_string()]),
+            env: None,
+        }),
+    );
+
+    let config = AgentServers { servers };
+    update_agent_mcp_config_command("copilot-cli".to_string(), config).unwrap();
+
+    let updated: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
+    let server = updated
+        .get("mcpServers")
+        .and_then(|v| v.get("filesystem"))
+        .and_then(|v| v.as_object())
+        .unwrap();
+
+    assert_eq!(server.get("command").and_then(|v| v.as_str()), Some("bunx"));
+    assert_eq!(server.get("type").and_then(|v| v.as_str()), Some("local"));
+    assert_eq!(server.get("disabled").and_then(|v| v.as_bool()), Some(true));
+    let tools = server.get("tools").and_then(|v| v.as_array()).unwrap();
+    assert_eq!(tools.len(), 1);
+    assert_eq!(tools[0].as_str(), Some("read"));
 }

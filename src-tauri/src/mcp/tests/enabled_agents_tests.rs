@@ -136,7 +136,7 @@ fn update_enabled_agents_command_preserves_all_agent_configs(
     let config: serde_json::Value = serde_json::from_str(&content).unwrap();
     let clients = config.get("clients").and_then(|v| v.as_object()).unwrap();
 
-    assert_eq!(clients.len(), 10);
+    assert_eq!(clients.len(), 14);
 
     assert_eq!(
         clients.get("ClaudeCode").and_then(|v| v.get("enabled")).and_then(|v| v.as_bool()),
@@ -169,12 +169,16 @@ fn update_enabled_agents_command_accepts_various_name_formats(
         "claude-code".to_string(),
         "cursor".to_string(),
         "openai_codex".to_string(),
+        "vscode_copilot".to_string(),
+        "copilot-cli".to_string(),
     ])
     .unwrap();
 
     let agents = get_enabled_agents_command().unwrap();
-    assert_eq!(agents.len(), 3);
+    assert_eq!(agents.len(), 5);
     assert!(agents.contains(&AgentType::ClaudeCode));
     assert!(agents.contains(&AgentType::Cursor));
     assert!(agents.contains(&AgentType::OpenAiCodex));
+    assert!(agents.contains(&AgentType::VsCodeCopilot));
+    assert!(agents.contains(&AgentType::CopilotCli));
 }

@@ -70,3 +70,39 @@ args = ["-y", "@upstash/context7-mcp"]
 url = "https://mcp.jina.ai"
 http_headers = { Authorization = "Bearer old" }
 "#;
+
+pub const VSCODE_COPILOT_CONFIG_JSON: &str = r#"{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "token"
+    }
+  ],
+  "servers": {
+    "local": {
+      "command": "npx",
+      "args": ["-y", "server-local"]
+    },
+    "remote": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer token"
+      }
+    }
+  }
+}
+"#;
+
+pub const COPILOT_CLI_CONFIG_JSON: &str = r#"{
+  "mcpServers": {
+    "filesystem": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "server-filesystem"],
+      "tools": ["read"],
+      "disabled": true
+    }
+  }
+}
+"#;

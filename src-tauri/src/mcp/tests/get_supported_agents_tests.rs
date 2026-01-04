@@ -16,7 +16,7 @@ fn get_supported_agents_command_returns_all_agents(
 
     let agents = get_supported_agents_command().unwrap();
 
-    assert_eq!(agents.len(), 10);
+    assert_eq!(agents.len(), 14);
 
     let agent_types: Vec<AgentType> = agents.iter().map(|a| a.agent_type).collect();
     assert!(agent_types.contains(&AgentType::ClaudeCode));
@@ -29,6 +29,10 @@ fn get_supported_agents_command_returns_all_agents(
     assert!(agent_types.contains(&AgentType::GeminiCli));
     assert!(agent_types.contains(&AgentType::Kiro));
     assert!(agent_types.contains(&AgentType::OpenAiCodex));
+    assert!(agent_types.contains(&AgentType::Comate));
+    assert!(agent_types.contains(&AgentType::VsCodeCopilot));
+    assert!(agent_types.contains(&AgentType::CopilotCli));
+    assert!(agent_types.contains(&AgentType::Alma));
 }
 
 #[rstest]
@@ -109,4 +113,13 @@ fn get_supported_agents_command_has_correct_config_paths(
 
     let codex = agents.iter().find(|a| a.agent_type == AgentType::OpenAiCodex).unwrap();
     assert_eq!(codex.config_path, temp_dir.path().join(".codex").join("config.toml"));
+
+    let comate = agents.iter().find(|a| a.agent_type == AgentType::Comate).unwrap();
+    assert_eq!(comate.config_path, temp_dir.path().join(".comate").join("mcp.json"));
+
+    let copilot_cli = agents.iter().find(|a| a.agent_type == AgentType::CopilotCli).unwrap();
+    assert_eq!(copilot_cli.config_path, temp_dir.path().join(".copilot").join("mcp-config.json"));
+
+    let alma = agents.iter().find(|a| a.agent_type == AgentType::Alma).unwrap();
+    assert_eq!(alma.config_path, temp_dir.path().join(".config").join("alma").join("mcp.json"));
 }

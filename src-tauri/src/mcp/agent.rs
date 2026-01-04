@@ -21,6 +21,10 @@ pub enum AgentType {
     GeminiCli,
     Kiro,
     OpenAiCodex,
+    Comate,
+    VsCodeCopilot,
+    CopilotCli,
+    Alma,
 }
 
 /// Information about a supported agent
@@ -47,6 +51,10 @@ pub fn get_all_agent_types() -> Vec<AgentType> {
         AgentType::GeminiCli,
         AgentType::Kiro,
         AgentType::OpenAiCodex,
+        AgentType::Comate,
+        AgentType::VsCodeCopilot,
+        AgentType::CopilotCli,
+        AgentType::Alma,
     ]
 }
 
@@ -63,6 +71,11 @@ pub fn parse_agent_name(name: &str) -> Result<AgentType, String> {
         "gemini-cli" | "gemini_cli" | "geminicli" => Ok(AgentType::GeminiCli),
         "kiro" => Ok(AgentType::Kiro),
         "openai-codex" | "openai_codex" | "openaicodex" | "codex" => Ok(AgentType::OpenAiCodex),
+        "comate" => Ok(AgentType::Comate),
+        "vscode-copilot" | "vscode_copilot" | "vscodecopilot" | "vs-code-copilot"
+        | "vs_code_copilot" => Ok(AgentType::VsCodeCopilot),
+        "copilot-cli" | "copilot_cli" | "copilotcli" => Ok(AgentType::CopilotCli),
+        "alma" => Ok(AgentType::Alma),
         _ => Err(format!("Unknown agent: {}", name)),
     }
 }
@@ -109,6 +122,10 @@ pub fn get_global_config_path(agent: AgentType) -> Result<PathBuf, String> {
         AgentType::GeminiCli => home.join(".gemini/settings.json"),
         AgentType::Kiro => home.join(".kiro/settings/mcp.json"),
         AgentType::OpenAiCodex => home.join(".codex/config.toml"),
+        AgentType::Comate => home.join(".comate/mcp.json"),
+        AgentType::VsCodeCopilot => config_dir.join("Code/User/mcp.json"),
+        AgentType::CopilotCli => home.join(".copilot/mcp-config.json"),
+        AgentType::Alma => home.join(".config/alma/mcp.json"),
     };
 
     Ok(path)

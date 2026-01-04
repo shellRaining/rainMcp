@@ -119,7 +119,11 @@
         "Trae",
         "GeminiCli",
         "Kiro",
-        "OpenAiCodex"
+        "OpenAiCodex",
+        "Comate",
+        "VsCodeCopilot",
+        "CopilotCli",
+        "Alma"
       ]
     },
     "Argument": {

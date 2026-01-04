@@ -21,6 +21,10 @@ const iconMap: Record<AgentType, string> = {
   GeminiCli: 'gemini',
   Kiro: 'kiro',
   OpenAiCodex: 'openai',
+  Comate: 'comate',
+  VsCodeCopilot: 'vscode-copilot',
+  CopilotCli: 'copilot-cli',
+  Alma: 'alma',
 };
 
 // Dynamic import SVG as Vue component
@@ -34,6 +38,10 @@ const iconComponents: Record<string, ReturnType<typeof defineAsyncComponent>> = 
   gemini: defineAsyncComponent(() => import('@/assets/icons/agents/gemini.svg')),
   kiro: defineAsyncComponent(() => import('@/assets/icons/agents/kiro.svg')),
   openai: defineAsyncComponent(() => import('@/assets/icons/agents/openai.svg')),
+  comate: defineAsyncComponent(() => import('@/assets/icons/agents/comate.svg')),
+  'vscode-copilot': defineAsyncComponent(() => import('@/assets/icons/agents/vscode-copilot.svg')),
+  'copilot-cli': defineAsyncComponent(() => import('@/assets/icons/agents/copilot-cli.svg')),
+  alma: defineAsyncComponent(() => import('@/assets/icons/agents/alma.svg')),
 };
 
 const IconComponent = computed(() => {

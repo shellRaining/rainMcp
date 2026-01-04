@@ -85,6 +85,7 @@ rainMcp/
 │   │       ├── mod.rs            # 模块入口和命令处理器
 │   │       ├── agent.rs          # Agent 类型定义和路径管理
 │   │       ├── agent_config.rs   # Agent 配置文件读写
+│   │       ├── agent_adapters/   # Agent 配置适配器
 │   │       ├── server_schema.rs  # Schema 定义
 │   │       ├── registry.rs       # Registry API 客户端
 │   │       ├── user_server.rs    # 用户服务器类型
@@ -221,6 +222,7 @@ pub enum AgentServerEntry {
 pub enum AgentType {
     ClaudeCode, Cursor, Windsurf, Cline, ClaudeDesktop,
     RooCode, Trae, GeminiCli, Kiro, OpenAiCodex,
+    Comate, VsCodeCopilot, CopilotCli, Alma,
 }
 
 // Agent 信息
@@ -253,17 +255,23 @@ Tauri 命令处理器：
 
 处理不同 agent 的配置文件格式差异：
 
-| Agent        | 格式 | 配置键名                         |
-| ------------ | ---- | -------------------------------- |
-| 大多数 agent | JSON | mcpServers                       |
-| Claude Code  | JSON | mcpServers（顶层可能有其他字段） |
-| OpenAI Codex | TOML | mcp_servers                      |
+| Agent           | 格式 | 配置键名                         |
+| --------------- | ---- | -------------------------------- |
+| 大多数 agent    | JSON | mcpServers                       |
+| Claude Code     | JSON | mcpServers（顶层可能有其他字段） |
+| VS Code Copilot | JSON | servers                          |
+| Copilot CLI     | JSON | mcpServers（需要 type/tools）    |
+| OpenAI Codex    | TOML | mcp_servers                      |
+
+说明：Comate、Alma 仍使用 mcpServers，但可能包含 disabled、type 等扩展字段。
 
 主要函数：
 
 - `read_agent_config()`: 根据 agent 类型选择解析器
 - `save_agent_config()`: 根据 agent 类型选择序列化方式
 - `add_server_to_agent()`: 将服务器添加到 agent 配置（直接使用 UserServer.config）
+
+适配逻辑由 `agent_adapters/` 处理，负责不同 agent 格式的读写和未知字段保留。
 
 ### 4.6 Agent 模块（mcp/agent.rs）
 

@@ -32,6 +32,10 @@ export const AGENT_DISPLAY_NAMES: Record<AgentType, string> = {
   GeminiCli: 'Gemini CLI',
   Kiro: 'Kiro',
   OpenAiCodex: 'OpenAI Codex',
+  Comate: 'Comate',
+  VsCodeCopilot: 'VS Code Copilot',
+  CopilotCli: 'Copilot CLI',
+  Alma: 'Alma',
 };
 
 // App config types (frontend-only, not in Rust schema)

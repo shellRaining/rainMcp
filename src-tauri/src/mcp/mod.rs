@@ -3,6 +3,7 @@
 //! This module handles MCP server configuration for various AI coding agents.
 
 pub mod agent;
+pub mod agent_adapters;
 pub mod agent_config;
 pub mod registry;
 pub mod server_schema;

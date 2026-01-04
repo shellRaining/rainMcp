@@ -32,7 +32,11 @@ export type AgentType =
   | 'Trae'
   | 'GeminiCli'
   | 'Kiro'
-  | 'OpenAiCodex';
+  | 'OpenAiCodex'
+  | 'Comate'
+  | 'VsCodeCopilot'
+  | 'CopilotCli'
+  | 'Alma';
 /**
  * Local transport configuration
  */
