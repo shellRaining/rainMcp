@@ -9,7 +9,6 @@ const props = defineProps<{
 
 const size = computed(() => props.size ?? 24);
 
-// Map agent types to icon file names
 const iconMap: Record<AgentType, string> = {
   ClaudeCode: 'claude',
   ClaudeDesktop: 'claude',
@@ -25,9 +24,9 @@ const iconMap: Record<AgentType, string> = {
   VsCodeCopilot: 'vscode-copilot',
   CopilotCli: 'copilot-cli',
   Alma: 'alma',
+  OpenCode: 'opencode',
 };
 
-// Dynamic import SVG as Vue component
 const iconComponents: Record<string, ReturnType<typeof defineAsyncComponent>> = {
   claude: defineAsyncComponent(() => import('@/assets/icons/agents/claude.svg')),
   cursor: defineAsyncComponent(() => import('@/assets/icons/agents/cursor.svg')),
@@ -42,6 +41,7 @@ const iconComponents: Record<string, ReturnType<typeof defineAsyncComponent>> = 
   'vscode-copilot': defineAsyncComponent(() => import('@/assets/icons/agents/vscode-copilot.svg')),
   'copilot-cli': defineAsyncComponent(() => import('@/assets/icons/agents/copilot-cli.svg')),
   alma: defineAsyncComponent(() => import('@/assets/icons/agents/alma.svg')),
+  opencode: defineAsyncComponent(() => import('@/assets/icons/agents/opencode.svg')),
 };
 
 const IconComponent = computed(() => {

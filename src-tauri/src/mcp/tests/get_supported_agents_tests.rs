@@ -16,7 +16,7 @@ fn get_supported_agents_command_returns_all_agents(
 
     let agents = get_supported_agents_command().unwrap();
 
-    assert_eq!(agents.len(), 14);
+    assert_eq!(agents.len(), 15);
 
     let agent_types: Vec<AgentType> = agents.iter().map(|a| a.agent_type).collect();
     assert!(agent_types.contains(&AgentType::ClaudeCode));
@@ -33,6 +33,7 @@ fn get_supported_agents_command_returns_all_agents(
     assert!(agent_types.contains(&AgentType::VsCodeCopilot));
     assert!(agent_types.contains(&AgentType::CopilotCli));
     assert!(agent_types.contains(&AgentType::Alma));
+    assert!(agent_types.contains(&AgentType::OpenCode));
 }
 
 #[rstest]

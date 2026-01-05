@@ -136,7 +136,7 @@ fn update_enabled_agents_command_preserves_all_agent_configs(
     let config: serde_json::Value = serde_json::from_str(&content).unwrap();
     let clients = config.get("clients").and_then(|v| v.as_object()).unwrap();
 
-    assert_eq!(clients.len(), 14);
+    assert_eq!(clients.len(), 15);
 
     assert_eq!(
         clients.get("ClaudeCode").and_then(|v| v.get("enabled")).and_then(|v| v.as_bool()),

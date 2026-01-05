@@ -55,6 +55,7 @@ mod fixtures;
 mod get_config_tests;
 mod get_server_raw_config_tests;
 mod get_supported_agents_tests;
+mod opencode_adapter_tests;
 mod schema_store_tests;
 mod update_config_tests;
 mod user_servers_tests;

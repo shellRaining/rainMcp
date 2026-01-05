@@ -9,49 +9,50 @@ export type AgentServerEntry =
         [k: string]: string;
       } | null;
       timeout?: number | null;
-      type: 'local';
+      type: "local";
     }
   | {
       headers?: {
         [k: string]: string;
       } | null;
       timeout?: number | null;
-      type: 'remote';
+      type: "remote";
       url: string;
     };
 /**
  * Supported AI coding agent types
  */
 export type AgentType =
-  | 'ClaudeCode'
-  | 'Cursor'
-  | 'Windsurf'
-  | 'Cline'
-  | 'ClaudeDesktop'
-  | 'RooCode'
-  | 'Trae'
-  | 'GeminiCli'
-  | 'Kiro'
-  | 'OpenAiCodex'
-  | 'Comate'
-  | 'VsCodeCopilot'
-  | 'CopilotCli'
-  | 'Alma';
+  | "ClaudeCode"
+  | "Cursor"
+  | "Windsurf"
+  | "Cline"
+  | "ClaudeDesktop"
+  | "RooCode"
+  | "Trae"
+  | "GeminiCli"
+  | "Kiro"
+  | "OpenAiCodex"
+  | "Comate"
+  | "VsCodeCopilot"
+  | "CopilotCli"
+  | "Alma"
+  | "OpenCode";
 /**
  * Local transport configuration
  */
 export type LocalTransport =
   | {
-      type: 'stdio';
+      type: "stdio";
     }
   | {
       headers?: EnvironmentVariable[];
-      type: 'sse';
+      type: "sse";
       url: string;
     }
   | {
       headers?: EnvironmentVariable[];
-      type: 'streamable-http';
+      type: "streamable-http";
       url: string;
     };
 /**
@@ -60,20 +61,20 @@ export type LocalTransport =
 export type RemoteTransport =
   | {
       headers?: EnvironmentVariable[];
-      type: 'sse';
+      type: "sse";
       url: string;
       variables?: unknown;
     }
   | {
       headers?: EnvironmentVariable[];
-      type: 'streamable-http';
+      type: "streamable-http";
       url: string;
       variables?: unknown;
     };
 /**
  * Origin type for a user server
  */
-export type OriginType = 'registry' | 'custom';
+export type OriginType = "registry" | "custom";
 
 /**
  * 包含所有需要导出的类型

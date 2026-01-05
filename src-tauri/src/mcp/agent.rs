@@ -25,6 +25,7 @@ pub enum AgentType {
     VsCodeCopilot,
     CopilotCli,
     Alma,
+    OpenCode,
 }
 
 /// Information about a supported agent
@@ -55,6 +56,7 @@ pub fn get_all_agent_types() -> Vec<AgentType> {
         AgentType::VsCodeCopilot,
         AgentType::CopilotCli,
         AgentType::Alma,
+        AgentType::OpenCode,
     ]
 }
 
@@ -76,6 +78,7 @@ pub fn parse_agent_name(name: &str) -> Result<AgentType, String> {
         | "vs_code_copilot" => Ok(AgentType::VsCodeCopilot),
         "copilot-cli" | "copilot_cli" | "copilotcli" => Ok(AgentType::CopilotCli),
         "alma" => Ok(AgentType::Alma),
+        "opencode" | "open-code" | "open_code" => Ok(AgentType::OpenCode),
         _ => Err(format!("Unknown agent: {}", name)),
     }
 }
@@ -126,6 +129,7 @@ pub fn get_global_config_path(agent: AgentType) -> Result<PathBuf, String> {
         AgentType::VsCodeCopilot => config_dir.join("Code/User/mcp.json"),
         AgentType::CopilotCli => home.join(".copilot/mcp-config.json"),
         AgentType::Alma => home.join(".config/alma/mcp.json"),
+        AgentType::OpenCode => home.join(".config/opencode/opencode.json"),
     };
 
     Ok(path)

@@ -20,7 +20,6 @@ export type {
 
 import type { AgentType } from './generated';
 
-// Frontend-specific constants
 export const AGENT_DISPLAY_NAMES: Record<AgentType, string> = {
   ClaudeCode: 'Claude Code',
   Cursor: 'Cursor',
@@ -36,6 +35,7 @@ export const AGENT_DISPLAY_NAMES: Record<AgentType, string> = {
   VsCodeCopilot: 'VS Code Copilot',
   CopilotCli: 'Copilot CLI',
   Alma: 'Alma',
+  OpenCode: 'OpenCode',
 };
 
 // App config types (frontend-only, not in Rust schema)

@@ -40,10 +40,16 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["command", "type"],
+          "required": [
+            "command",
+            "type"
+          ],
           "properties": {
             "args": {
-              "type": ["array", "null"],
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": "string"
               }
@@ -52,40 +58,59 @@
               "type": "string"
             },
             "env": {
-              "type": ["object", "null"],
+              "type": [
+                "object",
+                "null"
+              ],
               "additionalProperties": {
                 "type": "string"
               }
             },
             "timeout": {
-              "type": ["integer", "null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "format": "uint32",
               "minimum": 0.0
             },
             "type": {
               "type": "string",
-              "enum": ["local"]
+              "enum": [
+                "local"
+              ]
             }
           }
         },
         {
           "type": "object",
-          "required": ["type", "url"],
+          "required": [
+            "type",
+            "url"
+          ],
           "properties": {
             "headers": {
-              "type": ["object", "null"],
+              "type": [
+                "object",
+                "null"
+              ],
               "additionalProperties": {
                 "type": "string"
               }
             },
             "timeout": {
-              "type": ["integer", "null"],
+              "type": [
+                "integer",
+                "null"
+              ],
               "format": "uint32",
               "minimum": 0.0
             },
             "type": {
               "type": "string",
-              "enum": ["remote"]
+              "enum": [
+                "remote"
+              ]
             },
             "url": {
               "type": "string"
@@ -96,7 +121,9 @@
     },
     "AgentServers": {
       "type": "object",
-      "required": ["servers"],
+      "required": [
+        "servers"
+      ],
       "properties": {
         "servers": {
           "type": "object",
@@ -123,7 +150,8 @@
         "Comate",
         "VsCodeCopilot",
         "CopilotCli",
-        "Alma"
+        "Alma",
+        "OpenCode"
       ]
     },
     "Argument": {
@@ -139,15 +167,24 @@
         },
         "default": {
           "description": "Default value for the argument",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "description": {
           "description": "Description of the argument",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "format": {
           "description": "Input format: \"string\", \"number\", \"boolean\", \"filepath\"",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "isRepeated": {
           "description": "Whether the argument can be repeated",
@@ -166,11 +203,17 @@
         },
         "name": {
           "description": "Argument name (for named arguments, including leading dashes like \"--port\")",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "placeholder": {
           "description": "Placeholder text for UI display",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "type": {
           "description": "Argument type: \"positional\", \"named\", or may be empty",
@@ -179,18 +222,26 @@
         },
         "value": {
           "description": "Argument value (fixed value, not user-configurable)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "valueHint": {
           "description": "Hint for what kind of value is expected (for positional arguments)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "EnvironmentVariable": {
       "description": "Environment variable or header configuration (corresponds to Input/KeyValueInput in schema)",
       "type": "object",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "choices": {
           "description": "Possible choices",
@@ -201,15 +252,24 @@
         },
         "default": {
           "description": "Default value",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "description": {
           "description": "Description of the variable",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "format": {
           "description": "Input format (string, number, boolean, filepath)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "isRequired": {
           "description": "Whether the variable is required",
@@ -227,22 +287,33 @@
         },
         "placeholder": {
           "description": "Placeholder text for UI",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "value": {
           "description": "Fixed value (not user-configurable)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "Icon": {
       "description": "Icon for UI display",
       "type": "object",
-      "required": ["src"],
+      "required": [
+        "src"
+      ],
       "properties": {
         "mimeType": {
           "description": "MIME type",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "sizes": {
           "description": "Available sizes (e.g., [\"48x48\", \"96x96\"])",
@@ -257,7 +328,10 @@
         },
         "theme": {
           "description": "Theme this icon is designed for",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -266,17 +340,24 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["stdio"]
+              "enum": [
+                "stdio"
+              ]
             }
           }
         },
         {
           "type": "object",
-          "required": ["type", "url"],
+          "required": [
+            "type",
+            "url"
+          ],
           "properties": {
             "headers": {
               "type": "array",
@@ -286,7 +367,9 @@
             },
             "type": {
               "type": "string",
-              "enum": ["sse"]
+              "enum": [
+                "sse"
+              ]
             },
             "url": {
               "type": "string"
@@ -295,7 +378,10 @@
         },
         {
           "type": "object",
-          "required": ["type", "url"],
+          "required": [
+            "type",
+            "url"
+          ],
           "properties": {
             "headers": {
               "type": "array",
@@ -305,7 +391,9 @@
             },
             "type": {
               "type": "string",
-              "enum": ["streamable-http"]
+              "enum": [
+                "streamable-http"
+              ]
             },
             "url": {
               "type": "string"
@@ -320,19 +408,27 @@
         {
           "description": "Server configured from MCP Registry",
           "type": "string",
-          "enum": ["registry"]
+          "enum": [
+            "registry"
+          ]
         },
         {
           "description": "Server manually configured by user",
           "type": "string",
-          "enum": ["custom"]
+          "enum": [
+            "custom"
+          ]
         }
       ]
     },
     "Package": {
       "description": "Package configuration for local installation",
       "type": "object",
-      "required": ["identifier", "registryType", "transport"],
+      "required": [
+        "identifier",
+        "registryType",
+        "transport"
+      ],
       "properties": {
         "environmentVariables": {
           "description": "Environment variables",
@@ -343,7 +439,10 @@
         },
         "fileSha256": {
           "description": "SHA-256 hash for integrity verification",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "identifier": {
           "description": "Package identifier or URL",
@@ -358,7 +457,10 @@
         },
         "registryBaseUrl": {
           "description": "Base URL of the package registry",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "registryType": {
           "description": "Registry type (npm, pypi, oci, nuget, mcpb)",
@@ -373,7 +475,10 @@
         },
         "runtimeHint": {
           "description": "Runtime hint (npx, uvx, docker, dnx)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "transport": {
           "description": "Transport configuration",
@@ -385,7 +490,10 @@
         },
         "version": {
           "description": "Package version",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -394,7 +502,10 @@
       "oneOf": [
         {
           "type": "object",
-          "required": ["type", "url"],
+          "required": [
+            "type",
+            "url"
+          ],
           "properties": {
             "headers": {
               "type": "array",
@@ -404,7 +515,9 @@
             },
             "type": {
               "type": "string",
-              "enum": ["sse"]
+              "enum": [
+                "sse"
+              ]
             },
             "url": {
               "type": "string"
@@ -414,7 +527,10 @@
         },
         {
           "type": "object",
-          "required": ["type", "url"],
+          "required": [
+            "type",
+            "url"
+          ],
           "properties": {
             "headers": {
               "type": "array",
@@ -424,7 +540,9 @@
             },
             "type": {
               "type": "string",
-              "enum": ["streamable-http"]
+              "enum": [
+                "streamable-http"
+              ]
             },
             "url": {
               "type": "string"
@@ -440,26 +558,40 @@
       "properties": {
         "id": {
           "description": "Repository ID from hosting service",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "source": {
           "description": "Repository hosting service (e.g., \"github\")",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "subfolder": {
           "description": "Optional subfolder path in monorepo",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "url": {
           "description": "Repository URL",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "SchemaStore": {
       "description": "Schema store containing all cached server schemas",
       "type": "object",
-      "required": ["servers"],
+      "required": [
+        "servers"
+      ],
       "properties": {
         "servers": {
           "description": "List of server schemas",
@@ -470,14 +602,19 @@
         },
         "updated_at": {
           "description": "Timestamp of last update (ISO 8601 format)",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "ServerOrigin": {
       "description": "Origin information for a user server (for UI display only)",
       "type": "object",
-      "required": ["originType"],
+      "required": [
+        "originType"
+      ],
       "properties": {
         "originType": {
           "description": "Origin type",
@@ -489,21 +626,34 @@
         },
         "packageId": {
           "description": "Package identifier: \"{registry_type}:{identifier}\" (e.g., \"npm:@jina-ai/mcp-server\")",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "schemaName": {
           "description": "Registry schema name (e.g., \"io.jina/mcp-jina\")",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "ServerSchema": {
       "description": "Main server schema structure from MCP Registry",
       "type": "object",
-      "required": ["description", "name", "version"],
+      "required": [
+        "description",
+        "name",
+        "version"
+      ],
       "properties": {
         "$schema": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "description": {
           "description": "Human-readable description of server functionality",
@@ -547,7 +697,10 @@
         },
         "title": {
           "description": "Optional human-readable title",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "version": {
           "description": "Version string (should follow semantic versioning)",
@@ -555,14 +708,23 @@
         },
         "websiteUrl": {
           "description": "Optional website URL",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
     "SupportedAgent": {
       "description": "Information about a supported agent",
       "type": "object",
-      "required": ["agent_type", "config_path", "enabled", "is_configured", "name"],
+      "required": [
+        "agent_type",
+        "config_path",
+        "enabled",
+        "is_configured",
+        "name"
+      ],
       "properties": {
         "agent_type": {
           "$ref": "#/definitions/AgentType"
@@ -594,7 +756,11 @@
     "UserServer": {
       "description": "User-configured MCP server instance",
       "type": "object",
-      "required": ["config", "id", "name"],
+      "required": [
+        "config",
+        "id",
+        "name"
+      ],
       "properties": {
         "config": {
           "description": "Server configuration (local command or remote URL)",
@@ -606,7 +772,10 @@
         },
         "createdAt": {
           "description": "Timestamp of creation",
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "id": {
           "description": "Unique identifier for this user server",
