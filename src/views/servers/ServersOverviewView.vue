@@ -74,7 +74,7 @@ async function handleRefreshSchema() {
             class="h-4 w-4 mr-2"
             :class="{ 'animate-spin': serversStore.isRefreshingSchema }"
           />
-          Refresh Registry
+          {{ serversStore.refreshProgress ?? 'Refresh Registry' }}
         </Button>
         <Button size="sm" @click="openAddServerWindow">
           <Plus class="h-4 w-4 mr-2" />

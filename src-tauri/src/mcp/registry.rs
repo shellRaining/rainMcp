@@ -7,6 +7,7 @@ use log::{debug, error, info};
 use schemars::JsonSchema;
 use semver::Version;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter};
 
 use crate::mcp::server_schema::ServerSchema;
 
@@ -67,7 +68,7 @@ pub fn get_schema_store_path() -> Result<PathBuf, String> {
 }
 
 /// Fetch all servers from MCP Registry API (handles pagination with incremental deduplication)
-pub async fn fetch_registry_servers() -> Result<Vec<ServerSchema>, String> {
+pub async fn fetch_registry_servers(app: &AppHandle) -> Result<Vec<ServerSchema>, String> {
     info!("Starting to fetch registry servers");
     let client = reqwest::Client::new();
     let mut server_map: HashMap<String, ServerSchema> = HashMap::new();
@@ -89,6 +90,15 @@ pub async fn fetch_registry_servers() -> Result<Vec<ServerSchema>, String> {
         let new_servers: Vec<ServerSchema> =
             registry_response.servers.into_iter().map(|item| item.server).collect();
         merge_servers_incremental(&mut server_map, new_servers);
+
+        let _ = app.emit(
+            "refresh-registry-progress",
+            serde_json::json!({
+                "page": page,
+                "fetched": server_count,
+                "total": server_map.len()
+            }),
+        );
 
         match registry_response.metadata.next_cursor {
             Some(next) if !next.is_empty() => {
@@ -250,8 +260,8 @@ pub fn load_schema_store() -> Result<SchemaStore, String> {
 }
 
 /// Refresh schema store by fetching from registry
-pub async fn refresh_schema_store_impl() -> Result<SchemaStore, String> {
-    let servers = fetch_registry_servers().await?;
+pub async fn refresh_schema_store_impl(app: &AppHandle) -> Result<SchemaStore, String> {
+    let servers = fetch_registry_servers(app).await?;
 
     let store = SchemaStore { servers, updated_at: Some(chrono::Utc::now().to_rfc3339()) };
 

@@ -200,8 +200,10 @@ pub fn open_config_file_command(agent_name: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn refresh_schema_store_command() -> Result<registry::SchemaStore, String> {
-    registry::refresh_schema_store_impl().await
+pub async fn refresh_schema_store_command(
+    app: tauri::AppHandle,
+) -> Result<registry::SchemaStore, String> {
+    registry::refresh_schema_store_impl(&app).await
 }
 
 #[tauri::command]

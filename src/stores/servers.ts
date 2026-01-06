@@ -1,3 +1,4 @@
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { UserServer, SchemaStore, ServerSchema } from '@/types/mcp';
@@ -14,6 +15,7 @@ export const useServersStore = defineStore('servers', () => {
   const schemaStore = ref<SchemaStore | null>(null);
   const isLoadingSchema = ref(false);
   const isRefreshingSchema = ref(false);
+  const refreshProgress = ref<string | null>(null);
 
   // Computed
   const selectedServer = computed(() => {
@@ -63,13 +65,27 @@ export const useServersStore = defineStore('servers', () => {
 
   async function refreshSchemaStore() {
     isRefreshingSchema.value = true;
+    refreshProgress.value = 'Connecting...';
+    let unlisten: UnlistenFn | null = null;
+
     try {
+      unlisten = await listen<{ page: number; total: number }>(
+        'refresh-registry-progress',
+        (event) => {
+          const { page, total } = event.payload;
+          refreshProgress.value = `Fetching page ${page} (${total} servers found)`;
+        }
+      );
       schemaStore.value = await api.refreshSchemaStore();
     } catch (error) {
       logger.error('Failed to refresh schema store:', error);
       throw error;
     } finally {
+      if (unlisten) {
+        unlisten();
+      }
       isRefreshingSchema.value = false;
+      refreshProgress.value = null;
     }
   }
 
@@ -124,6 +140,7 @@ export const useServersStore = defineStore('servers', () => {
     schemaLastUpdated,
     isLoadingSchema,
     isRefreshingSchema,
+    refreshProgress,
     // Actions
     fetchUserServers,
     fetchSchemaStore,
