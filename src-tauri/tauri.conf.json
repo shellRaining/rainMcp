@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "rainMcp",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "identifier": "com.shellraining.rainMcp",
   "build": {
     "beforeDevCommand": "bun run dev",
@@ -27,6 +27,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -34,5 +35,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEFGOTk5MThCNzEwNzJGOTIKUldTU0x3ZHhpNUdacnhuSGlHdWtISC9za1JoV3daQ2Fnb0xSWmhvRHQ2ZFg2VFNkZjMxRllscm4K",
+      "endpoints": [
+        "https://github.com/shellraining/rainMcp/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

@@ -43,6 +43,8 @@ pub fn run() {
     let log_level = get_log_level();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .plugin(
             tauri_plugin_log::Builder::new()
                 .targets([

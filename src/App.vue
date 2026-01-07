@@ -2,6 +2,7 @@
 import { useRoute } from 'vue-router';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import MainLayout from '@/components/layout/MainLayout.vue';
+import UpdateNotification from '@/components/layout/UpdateNotification.vue';
 
 const route = useRoute();
 </script>
@@ -12,6 +13,9 @@ const route = useRoute();
     <router-view v-if="route.name === 'add-server'" />
 
     <!-- 主应用显示 MainLayout -->
-    <MainLayout v-else />
+    <template v-else>
+      <UpdateNotification />
+      <MainLayout />
+    </template>
   </TooltipProvider>
 </template>
