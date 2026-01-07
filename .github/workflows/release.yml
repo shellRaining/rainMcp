@@ -59,7 +59,14 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'Rain MCP ${{ github.ref_name }}'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseBody: |
+            ## Installation
+
+            ### macOS
+            If you see "rainMcp is damaged and can't be opened", run:
+            ```bash
+            xattr -cr /Applications/rainMcp.app
+            ```
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
