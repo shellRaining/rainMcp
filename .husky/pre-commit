@@ -1,0 +1,4 @@
+bun run lint:fe:fix
+bun run format:fe
+cd src-tauri && cargo fmt
+git add .
