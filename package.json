@@ -18,9 +18,12 @@
     "generate:schema": "cd src-tauri && cargo run --example generate_schema",
     "generate:types": "bun run scripts/generate-types.ts",
     "generate": "bun run generate:schema && bun run generate:types",
-    "version": "bun run scripts/sync-version.ts && git add src-tauri/tauri.conf.json",
+    "version": "bun run scripts/sync-version.ts && git add src-tauri/tauri.conf.json package.json",
     "postversion": "git push && git push --tags",
-    "prepare": "husky"
+    "prepare": "husky",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
