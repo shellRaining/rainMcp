@@ -1,6 +1,6 @@
 {
   "name": "rain-mcp",
-  "version": "0.4.1",
+  "version": "0.5.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,7 +17,13 @@
     "format": "bun run format:fe && bun run format:rust",
     "generate:schema": "cd src-tauri && cargo run --example generate_schema",
     "generate:types": "bun run scripts/generate-types.ts",
-    "generate": "bun run generate:schema && bun run generate:types"
+    "generate": "bun run generate:schema && bun run generate:types",
+    "version": "bun run scripts/sync-version.ts && git add src-tauri/tauri.conf.json package.json",
+    "postversion": "git push && git push --tags",
+    "prepare": "husky",
+    "version:patch": "bun pm version patch",
+    "version:minor": "bun pm version minor",
+    "version:major": "bun pm version major"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -44,6 +50,7 @@
     "@types/d3": "^7.4.3",
     "@unocss/reset": "^66.5.12",
     "@vitejs/plugin-vue": "^5.2.1",
+    "husky": "^9.1.7",
     "json-schema-to-typescript": "^15.0.4",
     "knip": "^5.79.0",
     "oxfmt": "^0.20.0",
