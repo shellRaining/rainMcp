@@ -68,6 +68,7 @@ OAuth 认证 (remote):
 ```
 
 注意:
+
 - `type` 字段是必需的，值为 `"local"` 或 `"remote"`
 - `enabled` 字段控制是否启用服务器，默认为 true
 - `timeout` 字段指定获取工具的超时时间（毫秒），默认为 5000

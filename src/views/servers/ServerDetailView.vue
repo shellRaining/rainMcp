@@ -16,6 +16,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +42,7 @@ const appStore = useAppStore();
 const isDeleting = ref(false);
 const isDeploying = ref(false);
 const isCopied = ref(false);
+const isSaving = ref(false);
 
 const server = computed(() => serversStore.selectedServer);
 
@@ -68,6 +72,89 @@ const serverTypeLabel = computed(() => {
       return 'Registry';
   }
 });
+
+function parseEnvString(envStr: string): Record<string, string> | null {
+  const result: Record<string, string> = {};
+  for (const line of envStr.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const idx = trimmed.indexOf('=');
+    if (idx > 0) {
+      result[trimmed.slice(0, idx).trim()] = trimmed.slice(idx + 1).trim();
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+function parseHeadersString(headersStr: string): Record<string, string> | null {
+  const result: Record<string, string> = {};
+  for (const line of headersStr.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const idx = trimmed.indexOf(':');
+    if (idx > 0) {
+      result[trimmed.slice(0, idx).trim()] = trimmed.slice(idx + 1).trim();
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+function envToString(env: Record<string, string> | null | undefined): string {
+  if (!env) return '';
+  return Object.entries(env)
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
+}
+
+function headersToString(headers: Record<string, string> | null | undefined): string {
+  if (!headers) return '';
+  return Object.entries(headers)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join('\n');
+}
+
+async function saveServer() {
+  if (!server.value) return;
+  isSaving.value = true;
+  try {
+    await serversStore.updateServer(server.value);
+  } catch (error) {
+    logger.error('Failed to save server:', error);
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+function updateServerName(value: string | number) {
+  if (!server.value) return;
+  server.value.name = String(value);
+}
+
+function updateRemoteUrl(value: string | number) {
+  if (!server.value || server.value.config.type !== 'remote') return;
+  server.value.config.url = String(value);
+}
+
+function updateRemoteHeaders(value: string | number) {
+  if (!server.value || server.value.config.type !== 'remote') return;
+  server.value.config.headers = parseHeadersString(String(value));
+}
+
+function updateLocalCommand(value: string | number) {
+  if (!server.value || server.value.config.type !== 'local') return;
+  server.value.config.command = String(value);
+}
+
+function updateLocalArgs(value: string | number) {
+  if (!server.value || server.value.config.type !== 'local') return;
+  const args = String(value).split(/\s+/).filter(Boolean);
+  server.value.config.args = args.length > 0 ? args : null;
+}
+
+function updateLocalEnv(value: string | number) {
+  if (!server.value || server.value.config.type !== 'local') return;
+  server.value.config.env = parseEnvString(String(value));
+}
 
 async function handleDelete() {
   if (!server.value) return;
@@ -130,10 +217,13 @@ async function handleCopyConfig() {
             <div class="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
               <component :is="serverTypeIcon" class="h-5 w-5 text-muted-foreground" />
             </div>
-            <div class="min-w-0">
-              <h1 class="text-lg font-semibold tracking-tight truncate">
-                {{ server.name }}
-              </h1>
+            <div class="min-w-0 flex-1">
+              <Input
+                :model-value="server.name"
+                @update:model-value="updateServerName"
+                @blur="saveServer"
+                class="h-8 text-lg font-semibold tracking-tight px-0 border-0 focus-visible:ring-0 bg-transparent"
+              />
               <Badge variant="secondary" class="text-xs">
                 {{ serverTypeLabel }}
               </Badge>
@@ -181,35 +271,41 @@ async function handleCopyConfig() {
             <div class="space-y-3">
               <!-- Remote URL -->
               <div v-if="server.config.type === 'remote'" class="space-y-1">
-                <p class="text-xs text-muted-foreground">URL</p>
-                <code
-                  class="block text-xs bg-muted px-3 py-2 rounded-md font-mono break-all selectable"
-                >
-                  {{ server.config.url }}
-                </code>
+                <Label for="remote-url">URL</Label>
+                <Input
+                  id="remote-url"
+                  :model-value="server.config.url"
+                  @update:model-value="updateRemoteUrl"
+                  @blur="saveServer"
+                  class="font-mono text-xs"
+                  placeholder="https://api.example.com/mcp"
+                />
               </div>
 
               <!-- Local Command -->
               <div v-if="server.config.type === 'local'" class="space-y-1">
-                <p class="text-xs text-muted-foreground">Command</p>
-                <code
-                  class="block text-xs bg-muted px-3 py-2 rounded-md font-mono break-all selectable"
-                >
-                  {{ server.config.command }}
-                </code>
+                <Label for="local-command">Command</Label>
+                <Input
+                  id="local-command"
+                  :model-value="server.config.command"
+                  @update:model-value="updateLocalCommand"
+                  @blur="saveServer"
+                  class="font-mono text-xs"
+                  placeholder="node"
+                />
               </div>
 
               <!-- Local Args -->
-              <div
-                v-if="server.config.type === 'local' && server.config.args?.length"
-                class="space-y-1"
-              >
-                <p class="text-xs text-muted-foreground">Arguments</p>
-                <code
-                  class="block text-xs bg-muted px-3 py-2 rounded-md font-mono break-all selectable"
-                >
-                  {{ server.config.args.join(' ') }}
-                </code>
+              <div v-if="server.config.type === 'local'" class="space-y-1">
+                <Label for="local-args">Arguments</Label>
+                <Input
+                  id="local-args"
+                  :model-value="server.config.args?.join(' ') || ''"
+                  @update:model-value="updateLocalArgs"
+                  @blur="saveServer"
+                  class="font-mono text-xs"
+                  placeholder="server.js --port 3000"
+                />
               </div>
 
               <!-- Schema Info (from origin) -->
@@ -233,41 +329,31 @@ async function handleCopyConfig() {
               </div>
 
               <!-- Environment Variables (for local) -->
-              <div
-                v-if="server.config.type === 'local' && server.config.env && Object.keys(server.config.env).length > 0"
-                class="space-y-1"
-              >
-                <p class="text-xs text-muted-foreground">Environment Variables</p>
-                <div class="bg-muted rounded-md px-3 py-2 space-y-1">
-                  <div
-                    v-for="(_value, key) in server.config.env"
-                    :key="key"
-                    class="text-xs font-mono selectable flex"
-                  >
-                    <span class="text-muted-foreground shrink-0">{{ key }}</span>
-                    <span class="text-muted-foreground mx-1">=</span>
-                    <span class="break-all">•••••••</span>
-                  </div>
-                </div>
+              <div v-if="server.config.type === 'local'" class="space-y-1">
+                <Label for="local-env">Environment Variables</Label>
+                <Textarea
+                  id="local-env"
+                  :model-value="envToString(server.config.env)"
+                  @update:model-value="updateLocalEnv"
+                  @blur="saveServer"
+                  placeholder="API_KEY=your-key&#10;DEBUG=true"
+                  rows="4"
+                  class="font-mono text-xs"
+                />
               </div>
 
               <!-- Headers (for remote) -->
-              <div
-                v-if="server.config.type === 'remote' && server.config.headers && Object.keys(server.config.headers).length > 0"
-                class="space-y-1"
-              >
-                <p class="text-xs text-muted-foreground">Headers</p>
-                <div class="bg-muted rounded-md px-3 py-2 space-y-1">
-                  <div
-                    v-for="(_value, key) in server.config.headers"
-                    :key="key"
-                    class="text-xs font-mono selectable flex"
-                  >
-                    <span class="text-muted-foreground shrink-0">{{ key }}</span>
-                    <span class="text-muted-foreground mx-1">:</span>
-                    <span class="break-all">•••••••</span>
-                  </div>
-                </div>
+              <div v-if="server.config.type === 'remote'" class="space-y-1">
+                <Label for="remote-headers">Headers</Label>
+                <Textarea
+                  id="remote-headers"
+                  :model-value="headersToString(server.config.headers)"
+                  @update:model-value="updateRemoteHeaders"
+                  @blur="saveServer"
+                  placeholder="Authorization: Bearer your-token&#10;X-API-Key: your-api-key"
+                  rows="4"
+                  class="font-mono text-xs"
+                />
               </div>
 
               <!-- Created At -->

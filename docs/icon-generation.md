@@ -14,6 +14,7 @@
 - 图标内容应居中放置
 
 参考资料：
+
 - [Apple HIG - App Icons](https://developer.apple.com/design/human-interface-guidelines/app-icons)
 - [Tauri Icons Documentation](https://v2.tauri.app/develop/icons)
 
@@ -28,6 +29,7 @@ magick original-icon.png -resize 820x820 -gravity center -background none -exten
 ```
 
 参数说明：
+
 - `-resize 820x820`: 将图标内容缩小到 820x820（占画布 80%）
 - `-gravity center`: 将内容居中放置
 - `-background none`: 使用透明背景
@@ -46,6 +48,7 @@ pnpm tauri icon
 ```
 
 Tauri CLI 会自动生成：
+
 - macOS: icon.icns（包含所有必需的尺寸和圆角处理）
 - Windows: icon.ico
 - 各种 PNG 尺寸：32x32.png, 128x128.png, 128x128@2x.png
@@ -54,6 +57,7 @@ Tauri CLI 会自动生成：
 ### 步骤 3: 清理多余文件
 
 对于桌面端应用，只需保留以下文件：
+
 - `32x32.png`
 - `128x128.png`
 - `128x128@2x.png`
@@ -61,6 +65,7 @@ Tauri CLI 会自动生成：
 - `icon.ico`（Windows）
 
 如果不需要移动端或应用商店支持，可以删除：
+
 - `android/` 目录
 - `ios/` 目录
 - `Square*.png`（Windows Store 图标）
@@ -116,11 +121,13 @@ pnpm tauri dev
 ## 故障排查
 
 如果图标仍然显示过大：
+
 1. 确认源图标已正确添加边距（四周约 102px 透明区域）
 2. 重新运行 `pnpm tauri icon` 命令
 3. 删除旧的构建产物并重新构建
 4. 重启应用查看效果
 
 如果图标圆角丢失：
+
 1. 确认使用的是 Tauri CLI 而不是手动 iconutil
 2. 检查 Tauri 版本是否为最新稳定版

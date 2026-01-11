@@ -21,6 +21,12 @@ pub struct OpenCodeAdapter {
     agent_type: AgentType,
 }
 
+impl Default for OpenCodeAdapter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OpenCodeAdapter {
     pub fn new() -> Self {
         Self { agent_type: AgentType::OpenCode }

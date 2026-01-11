@@ -44,14 +44,14 @@ async function installUpdate() {
     await checkForUpdates()
     if (!pendingUpdate) return
   }
-  
+
   isDownloading.value = true
   downloadProgress.value = 0
-  
+
   try {
     let downloaded = 0
     let contentLength = 0
-    
+
     await pendingUpdate.downloadAndInstall((event: any) => {
       switch (event.event) {
         case 'Started':
@@ -68,7 +68,7 @@ async function installUpdate() {
           break
       }
     })
-    
+
     await relaunch()
   } catch (error) {
     console.error('更新安装失败:', error)
@@ -79,13 +79,13 @@ async function installUpdate() {
 async function simulateDownload() {
   isDownloading.value = true
   downloadProgress.value = 0
-  
+
   // 模拟下载进度
   for (let i = 0; i <= 100; i += 10) {
     downloadProgress.value = i
     await new Promise(resolve => setTimeout(resolve, 200))
   }
-  
+
   // 模拟完成后关闭通知
   setTimeout(() => {
     console.log('模拟更新完成')
@@ -113,35 +113,26 @@ function dismissNotification() {
           <p v-if="updateNotes" class="text-xs text-muted-foreground line-clamp-2">
             {{ updateNotes }}
           </p>
-          
+
           <div v-if="isDownloading" class="mt-3">
             <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
               <span>下载中...</span>
               <span>{{ downloadProgress }}%</span>
             </div>
             <div class="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-              <div 
+              <div
                 class="h-full bg-primary transition-all duration-300"
                 :style="{ width: `${downloadProgress}%` }"
               />
             </div>
           </div>
         </div>
-        
+
         <div class="flex items-center gap-2">
-          <Button
-            v-if="!isDownloading"
-            variant="ghost"
-            size="sm"
-            @click="dismissNotification"
-          >
+          <Button v-if="!isDownloading" variant="ghost" size="sm" @click="dismissNotification">
             稍后
           </Button>
-          <Button
-            size="sm"
-            :disabled="isDownloading"
-            @click="installUpdate"
-          >
+          <Button size="sm" :disabled="isDownloading" @click="installUpdate">
             {{ isDownloading ? '更新中...' : '立即更新' }}
           </Button>
         </div>
