@@ -34,6 +34,11 @@ export const useAppStore = defineStore('app', () => {
     expandedMenu.value = menu;
   }
 
+  // 从二级页面返回一级（回到当前一级菜单的总览）
+  function backToOverview() {
+    selectedDetailId.value = null;
+  }
+
   // 检查某个菜单是否展开
   function isMenuExpanded(menu: PrimaryMenu): boolean {
     return expandedMenu.value === menu;
@@ -46,6 +51,7 @@ export const useAppStore = defineStore('app', () => {
     isViewingDetail,
     clickPrimaryMenu,
     clickDetailItem,
+    backToOverview,
     isMenuExpanded,
   };
 });

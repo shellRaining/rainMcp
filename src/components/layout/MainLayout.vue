@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import Sidebar from './Sidebar.vue';
 import OverviewView from '@/views/overview/OverviewView.vue';
 import AgentsOverviewView from '@/views/agents/AgentsOverviewView.vue';
@@ -13,6 +13,24 @@ import AboutView from '@/views/settings/AboutView.vue';
 import { useAppStore } from '@/stores/app';
 
 const appStore = useAppStore();
+
+function handleMouseSideBack(event: MouseEvent) {
+  // 鼠标侧键（通常为 button=3）触发浏览器 Back 行为时，在二级页面优先回到一级总览
+  if (!appStore.isViewingDetail) return;
+  if (event.button !== 3) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  appStore.backToOverview();
+}
+
+onMounted(() => {
+  window.addEventListener('mousedown', handleMouseSideBack, { capture: true });
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('mousedown', handleMouseSideBack, { capture: true });
+});
 
 // 根据当前状态决定显示哪个组件
 const currentComponent = computed(() => {
