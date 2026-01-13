@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import MarkdownRender from 'markstream-vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -10,6 +11,7 @@ const updateVersion = ref('');
 const updateNotes = ref('');
 const isDownloading = ref(false);
 const downloadProgress = ref(0);
+const errorMessage = ref('');
 let pendingUpdate: any = null;
 
 // 开发模式：设置为 true 可以模拟下载过程而不真正安装
@@ -34,6 +36,8 @@ async function checkForUpdates() {
 }
 
 async function installUpdate() {
+  errorMessage.value = '';
+
   if (DEV_MODE) {
     // 开发模式：模拟下载进度
     await simulateDownload();
@@ -55,10 +59,10 @@ async function installUpdate() {
     await pendingUpdate.downloadAndInstall((event: any) => {
       switch (event.event) {
         case 'Started':
-          contentLength = event.data.contentLength || 0;
+          contentLength = event?.data?.contentLength || 0;
           break;
         case 'Progress':
-          downloaded += event.data.chunkLength;
+          downloaded += event?.data?.chunkLength || 0;
           if (contentLength > 0) {
             downloadProgress.value = Math.round((downloaded / contentLength) * 100);
           }
@@ -69,10 +73,17 @@ async function installUpdate() {
       }
     });
 
-    await relaunch();
+    try {
+      await relaunch();
+    } catch (error) {
+      console.warn('重启应用失败（更新可能已安装）:', error);
+      errorMessage.value = '更新已安装，请手动重启应用以生效。';
+      isDownloading.value = false;
+    }
   } catch (error) {
     console.error('更新安装失败:', error);
     isDownloading.value = false;
+    errorMessage.value = `更新失败：${String((error as any)?.message || error)}`;
   }
 }
 
@@ -110,9 +121,12 @@ function dismissNotification() {
           <div class="flex items-center gap-2 mb-1">
             <span class="text-sm font-medium">发现新版本 {{ updateVersion }}</span>
           </div>
-          <p v-if="updateNotes" class="text-xs text-muted-foreground line-clamp-2">
-            {{ updateNotes }}
-          </p>
+          <div
+            v-if="updateNotes"
+            class="update-notes text-xs text-muted-foreground max-h-16 overflow-hidden"
+          >
+            <MarkdownRender :content="updateNotes" />
+          </div>
 
           <div v-if="isDownloading" class="mt-3">
             <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -126,6 +140,13 @@ function dismissNotification() {
               />
             </div>
           </div>
+
+          <p
+            v-if="errorMessage"
+            class="mt-2 text-xs text-destructive whitespace-pre-wrap break-words"
+          >
+            {{ errorMessage }}
+          </p>
         </div>
 
         <div class="flex items-center gap-2">
@@ -155,5 +176,41 @@ function dismissNotification() {
 .slide-down-leave-to {
   opacity: 0;
   transform: translate(-50%, -20px);
+}
+
+.update-notes :deep(.markstream-vue) {
+  font-size: inherit;
+  color: inherit;
+}
+
+.update-notes :deep(.heading-node),
+.update-notes :deep(.heading-1),
+.update-notes :deep(.heading-2),
+.update-notes :deep(.heading-3),
+.update-notes :deep(.heading-4),
+.update-notes :deep(.heading-5),
+.update-notes :deep(.heading-6) {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  margin: 0 !important;
+  font-weight: 600 !important;
+}
+
+.update-notes :deep(.blockquote) {
+  margin: 0 !important;
+  border-left: 0 !important;
+  padding-left: 0 !important;
+  font-style: normal !important;
+}
+
+.update-notes :deep(.list-node) {
+  margin: 0 !important;
+  padding-left: 1.25em !important;
+}
+
+.update-notes :deep(.code-block-container),
+.update-notes :deep(.code-editor-container) {
+  max-height: 8rem;
+  overflow: auto;
 }
 </style>
