@@ -1,4 +1,3 @@
-bun run lint:fe:fix
-bun run format:fe
+bunx lint-staged
 cd src-tauri && cargo fmt
-git add .
+git add -u
