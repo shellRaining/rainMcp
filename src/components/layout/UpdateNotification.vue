@@ -14,9 +14,6 @@ const downloadProgress = ref(0);
 const errorMessage = ref('');
 let pendingUpdate: any = null;
 
-// 开发模式：设置为 true 可以模拟下载过程而不真正安装
-const DEV_MODE = import.meta.env.DEV;
-
 onMounted(async () => {
   await checkForUpdates();
 });
@@ -37,12 +34,6 @@ async function checkForUpdates() {
 
 async function installUpdate() {
   errorMessage.value = '';
-
-  if (DEV_MODE) {
-    // 开发模式：模拟下载进度
-    await simulateDownload();
-    return;
-  }
 
   if (!pendingUpdate) {
     await checkForUpdates();
@@ -85,24 +76,6 @@ async function installUpdate() {
     isDownloading.value = false;
     errorMessage.value = `更新失败：${String((error as any)?.message || error)}`;
   }
-}
-
-async function simulateDownload() {
-  isDownloading.value = true;
-  downloadProgress.value = 0;
-
-  // 模拟下载进度
-  for (let i = 0; i <= 100; i += 10) {
-    downloadProgress.value = i;
-    await new Promise((resolve) => setTimeout(resolve, 200));
-  }
-
-  // 模拟完成后关闭通知
-  setTimeout(() => {
-    console.log('模拟更新完成');
-    isDownloading.value = false;
-    showNotification.value = false;
-  }, 500);
 }
 
 function dismissNotification() {
