@@ -18,6 +18,7 @@ const iconMap: Record<AgentType, string> = {
   RooCode: 'roo-code',
   Trae: 'trae',
   GeminiCli: 'gemini',
+  Antigravity: 'gemini',
   Kiro: 'kiro',
   OpenAiCodex: 'openai',
   Comate: 'comate',

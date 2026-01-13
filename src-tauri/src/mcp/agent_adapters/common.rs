@@ -31,12 +31,16 @@ pub fn parse_server_entry(value: &Value) -> Result<AgentServerEntry, String> {
             args,
             env,
         }))
-    } else if obj.contains_key("url") || obj.contains_key("httpUrl") {
+    } else if obj.contains_key("url")
+        || obj.contains_key("httpUrl")
+        || obj.contains_key("serverUrl")
+    {
         let url = obj
             .get("url")
             .or_else(|| obj.get("httpUrl"))
+            .or_else(|| obj.get("serverUrl"))
             .and_then(|v| v.as_str())
-            .ok_or_else(|| "url must be a string".to_string())?
+            .ok_or_else(|| "url/serverUrl must be a string".to_string())?
             .to_string();
 
         let headers: Option<HashMap<String, String>> =

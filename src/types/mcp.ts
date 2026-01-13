@@ -29,6 +29,7 @@ export const AGENT_DISPLAY_NAMES: Record<AgentType, string> = {
   RooCode: 'Roo Code',
   Trae: 'Trae',
   GeminiCli: 'Gemini CLI',
+  Antigravity: 'Google Antigravity',
   Kiro: 'Kiro',
   OpenAiCodex: 'OpenAI Codex',
   Comate: 'Comate',

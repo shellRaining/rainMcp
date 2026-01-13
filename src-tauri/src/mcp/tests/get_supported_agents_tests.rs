@@ -16,7 +16,7 @@ fn get_supported_agents_command_returns_all_agents(
 
     let agents = get_supported_agents_command().unwrap();
 
-    assert_eq!(agents.len(), 15);
+    assert_eq!(agents.len(), 16);
 
     let agent_types: Vec<AgentType> = agents.iter().map(|a| a.agent_type).collect();
     assert!(agent_types.contains(&AgentType::ClaudeCode));
@@ -27,6 +27,7 @@ fn get_supported_agents_command_returns_all_agents(
     assert!(agent_types.contains(&AgentType::RooCode));
     assert!(agent_types.contains(&AgentType::Trae));
     assert!(agent_types.contains(&AgentType::GeminiCli));
+    assert!(agent_types.contains(&AgentType::Antigravity));
     assert!(agent_types.contains(&AgentType::Kiro));
     assert!(agent_types.contains(&AgentType::OpenAiCodex));
     assert!(agent_types.contains(&AgentType::Comate));
@@ -111,6 +112,12 @@ fn get_supported_agents_command_has_correct_config_paths(
 
     let cursor = agents.iter().find(|a| a.agent_type == AgentType::Cursor).unwrap();
     assert_eq!(cursor.config_path, temp_dir.path().join(".cursor").join("mcp.json"));
+
+    let antigravity = agents.iter().find(|a| a.agent_type == AgentType::Antigravity).unwrap();
+    assert_eq!(
+        antigravity.config_path,
+        temp_dir.path().join(".gemini").join("antigravity").join("mcp_config.json")
+    );
 
     let codex = agents.iter().find(|a| a.agent_type == AgentType::OpenAiCodex).unwrap();
     assert_eq!(codex.config_path, temp_dir.path().join(".codex").join("config.toml"));

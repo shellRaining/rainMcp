@@ -19,6 +19,7 @@ pub enum AgentType {
     RooCode,
     Trae,
     GeminiCli,
+    Antigravity,
     Kiro,
     OpenAiCodex,
     Comate,
@@ -50,6 +51,7 @@ pub fn get_all_agent_types() -> Vec<AgentType> {
         AgentType::RooCode,
         AgentType::Trae,
         AgentType::GeminiCli,
+        AgentType::Antigravity,
         AgentType::Kiro,
         AgentType::OpenAiCodex,
         AgentType::Comate,
@@ -71,6 +73,7 @@ pub fn parse_agent_name(name: &str) -> Result<AgentType, String> {
         "roo-code" | "roo_code" | "roocode" => Ok(AgentType::RooCode),
         "trae" => Ok(AgentType::Trae),
         "gemini-cli" | "gemini_cli" | "geminicli" => Ok(AgentType::GeminiCli),
+        "antigravity" | "google-antigravity" | "google_antigravity" => Ok(AgentType::Antigravity),
         "kiro" => Ok(AgentType::Kiro),
         "openai-codex" | "openai_codex" | "openaicodex" | "codex" => Ok(AgentType::OpenAiCodex),
         "comate" => Ok(AgentType::Comate),
@@ -123,6 +126,7 @@ pub fn get_global_config_path(agent: AgentType) -> Result<PathBuf, String> {
             config_dir.join("Trae/User/mcp.json")
         }
         AgentType::GeminiCli => home.join(".gemini/settings.json"),
+        AgentType::Antigravity => home.join(".gemini/antigravity/mcp_config.json"),
         AgentType::Kiro => home.join(".kiro/settings/mcp.json"),
         AgentType::OpenAiCodex => home.join(".codex/config.toml"),
         AgentType::Comate => home.join(".comate/mcp.json"),

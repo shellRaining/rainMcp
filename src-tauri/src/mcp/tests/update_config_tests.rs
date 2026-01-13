@@ -10,8 +10,8 @@ use crate::mcp::{
 };
 
 use super::fixtures::{
-    test_env, CLAUDE_CODE_CONFIG_WITH_FIELDS_JSON, COPILOT_CLI_CONFIG_JSON,
-    OPENAI_CODEX_CONFIG_WITH_FIELDS_TOML,
+    test_env, ANTIGRAVITY_CONFIG_WITH_FIELDS_JSON, CLAUDE_CODE_CONFIG_WITH_FIELDS_JSON,
+    COPILOT_CLI_CONFIG_JSON, OPENAI_CODEX_CONFIG_WITH_FIELDS_TOML,
 };
 use super::EnvGuard;
 
@@ -267,4 +267,68 @@ fn update_agent_mcp_config_command_preserves_copilot_cli_fields(
     let tools = server.get("tools").and_then(|v| v.as_array()).unwrap();
     assert_eq!(tools.len(), 1);
     assert_eq!(tools[0].as_str(), Some("read"));
+}
+
+#[rstest]
+fn update_agent_mcp_config_command_preserves_antigravity_fields(
+    test_env: (TempDir, EnvGuard, std::sync::MutexGuard<'static, ()>),
+) {
+    let (temp_dir, _env_guard, _lock) = test_env;
+
+    let config_path = temp_dir.path().join(".gemini").join("antigravity").join("mcp_config.json");
+    fs::create_dir_all(config_path.parent().unwrap()).unwrap();
+    fs::write(&config_path, ANTIGRAVITY_CONFIG_WITH_FIELDS_JSON).unwrap();
+
+    let mut servers = HashMap::new();
+    let mut local_env = HashMap::new();
+    local_env.insert("API_KEY".to_string(), "value".to_string());
+    servers.insert(
+        "local-server".to_string(),
+        AgentServerEntry::Local(LocalServerEntry {
+            base: BaseServerEntry { timeout: Some(120) },
+            command: "npx".to_string(),
+            args: Some(vec!["-y".to_string(), "new-local".to_string()]),
+            env: Some(local_env),
+        }),
+    );
+    let mut headers = HashMap::new();
+    headers.insert("Authorization".to_string(), "Bearer token".to_string());
+    servers.insert(
+        "remote-server".to_string(),
+        AgentServerEntry::Remote(RemoteServerEntry {
+            base: BaseServerEntry { timeout: None },
+            url: "https://mcp.example.com/mcp".to_string(),
+            headers: Some(headers),
+        }),
+    );
+
+    let config = AgentServers { servers };
+    update_agent_mcp_config_command("antigravity".to_string(), config).unwrap();
+
+    let updated: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(&config_path).unwrap()).unwrap();
+    assert_eq!(updated.get("someRootField").and_then(|v| v.as_str()), Some("keep"));
+
+    let mcp_servers = updated.get("mcpServers").and_then(|v| v.as_object()).unwrap();
+    assert!(mcp_servers.get("old-server").is_none());
+
+    let local = mcp_servers.get("local-server").and_then(|v| v.as_object()).unwrap();
+    assert_eq!(local.get("command").and_then(|v| v.as_str()), Some("npx"));
+    assert_eq!(local.get("timeout").and_then(|v| v.as_u64()), Some(120));
+    let args = local.get("args").and_then(|v| v.as_array()).unwrap();
+    assert_eq!(args.len(), 2);
+    assert_eq!(args[0].as_str(), Some("-y"));
+    assert_eq!(args[1].as_str(), Some("new-local"));
+    let env = local.get("env").and_then(|v| v.as_object()).unwrap();
+    assert_eq!(env.get("API_KEY").and_then(|v| v.as_str()), Some("value"));
+    assert!(local.get("type").is_none());
+
+    let remote = mcp_servers.get("remote-server").and_then(|v| v.as_object()).unwrap();
+    assert_eq!(
+        remote.get("serverUrl").and_then(|v| v.as_str()),
+        Some("https://mcp.example.com/mcp")
+    );
+    assert!(remote.get("url").is_none());
+    let headers = remote.get("headers").and_then(|v| v.as_object()).unwrap();
+    assert_eq!(headers.get("Authorization").and_then(|v| v.as_str()), Some("Bearer token"));
 }

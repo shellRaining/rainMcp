@@ -31,6 +31,7 @@ export type AgentType =
   | 'RooCode'
   | 'Trae'
   | 'GeminiCli'
+  | 'Antigravity'
   | 'Kiro'
   | 'OpenAiCodex'
   | 'Comate'

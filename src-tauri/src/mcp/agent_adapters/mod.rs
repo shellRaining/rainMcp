@@ -1,3 +1,4 @@
+pub mod antigravity_adapter;
 pub mod common;
 pub mod json_adapter;
 pub mod opencode_adapter;
@@ -5,6 +6,7 @@ pub mod toml_adapter;
 
 use crate::mcp::agent::AgentType;
 
+use antigravity_adapter::AntigravityAdapter;
 use json_adapter::{JsonAdapter, JsonServerExtras};
 use opencode_adapter::OpenCodeAdapter;
 use toml_adapter::TomlAdapter;
@@ -21,6 +23,7 @@ pub fn get_adapter(agent: AgentType) -> Box<dyn AgentConfigAdapter> {
     match agent {
         AgentType::OpenAiCodex => Box::new(TomlAdapter::new(agent)),
         AgentType::OpenCode => Box::new(OpenCodeAdapter::new()),
+        AgentType::Antigravity => Box::new(AntigravityAdapter::new()),
         AgentType::VsCodeCopilot => {
             Box::new(JsonAdapter::new(agent, "servers", JsonServerExtras::VsCodeCopilot))
         }

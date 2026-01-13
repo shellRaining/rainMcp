@@ -106,3 +106,34 @@ pub const COPILOT_CLI_CONFIG_JSON: &str = r#"{
   }
 }
 "#;
+
+pub const ANTIGRAVITY_CONFIG_JSON: &str = r#"{
+  "mcpServers": {
+    "server-name": {
+      "command": "npx",
+      "args": ["-y", "mcp-server"],
+      "env": {
+        "API_KEY": "<redacted>"
+      },
+      "timeout": 123
+    },
+    "remote": {
+      "serverUrl": "https://mcp.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer <redacted>"
+      }
+    }
+  }
+}
+"#;
+
+pub const ANTIGRAVITY_CONFIG_WITH_FIELDS_JSON: &str = r#"{
+  "someRootField": "keep",
+  "mcpServers": {
+    "old-server": {
+      "command": "npx",
+      "args": ["-y", "old"]
+    }
+  }
+}
+"#;
