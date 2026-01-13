@@ -26,13 +26,15 @@ function toggleSearch() {
     isExpanded.value = true;
     nextTick(() => {
       // Access the underlying input element from Shadcn/Vue component
-      const inputEl = searchInputRef.value?.$el?.nextElementSibling as HTMLInputElement || searchInputRef.value?.$el as HTMLInputElement;
+      const inputEl =
+        (searchInputRef.value?.$el?.nextElementSibling as HTMLInputElement) ||
+        (searchInputRef.value?.$el as HTMLInputElement);
       if (inputEl && typeof inputEl.focus === 'function') {
         inputEl.focus();
       } else {
-         // Fallback if structure is different
-         const input = searchInputRef.value?.$el?.querySelector('input');
-         input?.focus();
+        // Fallback if structure is different
+        const input = searchInputRef.value?.$el?.querySelector('input');
+        input?.focus();
       }
     });
   }

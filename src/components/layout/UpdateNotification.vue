@@ -1,101 +1,101 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { check } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { ref, onMounted } from 'vue';
+import { check } from '@tauri-apps/plugin-updater';
+import { relaunch } from '@tauri-apps/plugin-process';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
-const showNotification = ref(false)
-const updateVersion = ref('')
-const updateNotes = ref('')
-const isDownloading = ref(false)
-const downloadProgress = ref(0)
-let pendingUpdate: any = null
+const showNotification = ref(false);
+const updateVersion = ref('');
+const updateNotes = ref('');
+const isDownloading = ref(false);
+const downloadProgress = ref(0);
+let pendingUpdate: any = null;
 
 // 开发模式：设置为 true 可以模拟下载过程而不真正安装
-const DEV_MODE = import.meta.env.DEV
+const DEV_MODE = import.meta.env.DEV;
 
 onMounted(async () => {
-  await checkForUpdates()
-})
+  await checkForUpdates();
+});
 
 async function checkForUpdates() {
   try {
-    const result = await check()
+    const result = await check();
     if (result) {
-      pendingUpdate = result
-      updateVersion.value = result.version
-      updateNotes.value = result.body || ''
-      showNotification.value = true
+      pendingUpdate = result;
+      updateVersion.value = result.version;
+      updateNotes.value = result.body || '';
+      showNotification.value = true;
     }
   } catch (error) {
-    console.error('检查更新失败:', error)
+    console.error('检查更新失败:', error);
   }
 }
 
 async function installUpdate() {
   if (DEV_MODE) {
     // 开发模式：模拟下载进度
-    await simulateDownload()
-    return
+    await simulateDownload();
+    return;
   }
 
   if (!pendingUpdate) {
-    await checkForUpdates()
-    if (!pendingUpdate) return
+    await checkForUpdates();
+    if (!pendingUpdate) return;
   }
 
-  isDownloading.value = true
-  downloadProgress.value = 0
+  isDownloading.value = true;
+  downloadProgress.value = 0;
 
   try {
-    let downloaded = 0
-    let contentLength = 0
+    let downloaded = 0;
+    let contentLength = 0;
 
     await pendingUpdate.downloadAndInstall((event: any) => {
       switch (event.event) {
         case 'Started':
-          contentLength = event.data.contentLength || 0
-          break
+          contentLength = event.data.contentLength || 0;
+          break;
         case 'Progress':
-          downloaded += event.data.chunkLength
+          downloaded += event.data.chunkLength;
           if (contentLength > 0) {
-            downloadProgress.value = Math.round((downloaded / contentLength) * 100)
+            downloadProgress.value = Math.round((downloaded / contentLength) * 100);
           }
-          break
+          break;
         case 'Finished':
-          downloadProgress.value = 100
-          break
+          downloadProgress.value = 100;
+          break;
       }
-    })
+    });
 
-    await relaunch()
+    await relaunch();
   } catch (error) {
-    console.error('更新安装失败:', error)
-    isDownloading.value = false
+    console.error('更新安装失败:', error);
+    isDownloading.value = false;
   }
 }
 
 async function simulateDownload() {
-  isDownloading.value = true
-  downloadProgress.value = 0
+  isDownloading.value = true;
+  downloadProgress.value = 0;
 
   // 模拟下载进度
   for (let i = 0; i <= 100; i += 10) {
-    downloadProgress.value = i
-    await new Promise(resolve => setTimeout(resolve, 200))
+    downloadProgress.value = i;
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
   // 模拟完成后关闭通知
   setTimeout(() => {
-    console.log('模拟更新完成')
-    isDownloading.value = false
-    showNotification.value = false
-  }, 500)
+    console.log('模拟更新完成');
+    isDownloading.value = false;
+    showNotification.value = false;
+  }, 500);
 }
 
 function dismissNotification() {
-  showNotification.value = false
+  showNotification.value = false;
 }
 </script>
 

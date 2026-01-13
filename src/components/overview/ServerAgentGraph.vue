@@ -258,7 +258,11 @@ function renderGraph() {
         // Highlight agent nodes near cursor
         agentNodeGroups.select('rect').attr('stroke', (d) => {
           const dist = Math.sqrt(Math.pow(d.x - event.x, 2) + Math.pow(d.y - event.y, 2));
-          return dist < 50 ? colors.dragLine : d.id === focusedNodeId.value ? colors.highlight : colors.border;
+          return dist < 50
+            ? colors.dragLine
+            : d.id === focusedNodeId.value
+              ? colors.highlight
+              : colors.border;
         });
       })
       .on('end', async function (event, sourceNode) {
@@ -276,12 +280,14 @@ function renderGraph() {
         }
 
         // Reset highlights
-        agentNodeGroups.select('rect').attr('stroke', (d) =>
-          d.id === focusedNodeId.value ? colors.highlight : colors.border
-        );
+        agentNodeGroups
+          .select('rect')
+          .attr('stroke', (d) => (d.id === focusedNodeId.value ? colors.highlight : colors.border));
 
         dragState.value = { active: false, sourceNode: null, currentX: 0, currentY: 0 };
-      }) as unknown as (selection: d3.Selection<SVGGElement, GraphNode, SVGGElement, unknown>) => void
+      }) as unknown as (
+      selection: d3.Selection<SVGGElement, GraphNode, SVGGElement, unknown>
+    ) => void
   );
 
   // Draw agent nodes (rectangles with text inside)

@@ -18,7 +18,7 @@ const emit = defineEmits<{
   'update:serverName': [value: string];
   'update:remoteUrl': [value: string];
   'update:remoteHeaders': [value: string];
-  'submit': [];
+  submit: [];
 }>();
 
 const canSubmit = computed(() => {

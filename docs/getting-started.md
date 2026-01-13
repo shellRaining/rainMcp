@@ -348,13 +348,8 @@ MCP Registry API 客户端：
 ```typescript
 // Agent 相关
 export async function getSupportedAgents(): Promise<SupportedAgent[]>;
-export async function updateEnabledAgents(
-  enabledAgents: string[],
-): Promise<void>;
-export async function updateAgentMcpConfig(
-  agentName: string,
-  config: AgentServers,
-): Promise<void>;
+export async function updateEnabledAgents(enabledAgents: string[]): Promise<void>;
+export async function updateAgentMcpConfig(agentName: string, config: AgentServers): Promise<void>;
 
 // Schema Store 相关
 export async function getSchemaStore(): Promise<SchemaStore>;
@@ -363,10 +358,7 @@ export async function refreshSchemaStore(): Promise<SchemaStore>;
 // User Server 相关
 export async function getUserServers(): Promise<UserServer[]>;
 export async function addUserServer(server: UserServer): Promise<UserServer>;
-export async function addServerToAgent(
-  agentName: string,
-  serverId: string,
-): Promise<void>;
+export async function addServerToAgent(agentName: string, serverId: string): Promise<void>;
 ```
 
 ### 5.2 状态管理（stores/）

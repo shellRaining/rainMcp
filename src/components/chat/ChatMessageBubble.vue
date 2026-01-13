@@ -4,9 +4,7 @@ import ChatToolCall from './ChatToolCall.vue';
 import type { GeneratedSchema } from '@/api/tauri';
 import type { ToolCallData } from './ChatToolCall.vue';
 
-export type ContentItem =
-  | { type: 'text'; content: string }
-  | ({ type: 'toolCall' } & ToolCallData);
+export type ContentItem = { type: 'text'; content: string } | ({ type: 'toolCall' } & ToolCallData);
 
 export interface MessageData {
   id: string;
@@ -46,12 +44,7 @@ function handleToolUse(item: ContentItem) {
 </script>
 
 <template>
-  <div
-    :class="[
-      'py-2',
-      message.role === 'user' ? 'pl-12' : '',
-    ]"
-  >
+  <div :class="['py-2', message.role === 'user' ? 'pl-12' : '']">
     <!-- User message with bubble -->
     <div v-if="message.role === 'user'" class="flex justify-end">
       <div

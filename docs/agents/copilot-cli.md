@@ -44,8 +44,6 @@ HTTP 传输:
     }
   }
 }
-
-
 ```
 
 注意: `tools` 和 `type` 为必填字段。local 需要 `command` 和 `args`，HTTP/SSE 需要 `url`。

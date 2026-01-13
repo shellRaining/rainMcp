@@ -3,7 +3,10 @@ import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, AlertCircle } from 'lucide-vue-next';
-import ChatMessageBubble, { type ContentItem, type MessageData } from '@/components/chat/ChatMessageBubble.vue';
+import ChatMessageBubble, {
+  type ContentItem,
+  type MessageData,
+} from '@/components/chat/ChatMessageBubble.vue';
 import ChatInput from '@/components/chat/ChatInput.vue';
 import * as api from '@/api/tauri';
 import type { GeneratedSchema, StreamEvent } from '@/api/tauri';
@@ -99,7 +102,10 @@ async function setupStreamListener() {
         {
           const toolCall = [...streamingItems.value]
             .reverse()
-            .find((item) => item.type === 'toolCall' && item.name === data.name && item.status === 'running');
+            .find(
+              (item) =>
+                item.type === 'toolCall' && item.name === data.name && item.status === 'running'
+            );
           if (toolCall && toolCall.type === 'toolCall') {
             toolCall.status = 'success';
             toolCall.resultPreview = data.resultPreview;

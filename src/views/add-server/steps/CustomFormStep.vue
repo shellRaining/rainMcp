@@ -20,7 +20,7 @@ const emit = defineEmits<{
   'update:customCommand': [value: string];
   'update:customArgs': [value: string];
   'update:customEnv': [value: string];
-  'submit': [];
+  submit: [];
 }>();
 
 const canSubmit = computed(() => {

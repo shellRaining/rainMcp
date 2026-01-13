@@ -1,15 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import {
-  Server,
-  Globe,
-  Terminal,
-  Package,
-  Trash2,
-  Send,
-  Copy,
-  Check,
-} from 'lucide-vue-next';
+import { Server, Globe, Terminal, Package, Trash2, Send, Copy, Check } from 'lucide-vue-next';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

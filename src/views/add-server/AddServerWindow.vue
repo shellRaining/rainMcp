@@ -31,7 +31,7 @@ onBeforeMount(async () => {
   } catch (error) {
     logger.debug('[AddServerWindow] Failed to adjust traffic lights:', error);
   }
-})
+});
 
 // Initialize store data
 onMounted(async () => {
@@ -107,9 +107,13 @@ async function handleAiSubmit(schema: GeneratedSchema) {
 }
 
 // Reset form when window closes
-watch(() => currentWindow, () => {
-  form.resetForm();
-}, { immediate: true });
+watch(
+  () => currentWindow,
+  () => {
+    form.resetForm();
+  },
+  { immediate: true }
+);
 </script>
 
 <template>

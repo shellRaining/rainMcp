@@ -18,11 +18,7 @@ macOS:
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/Users/username/Desktop"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/username/Desktop"]
     }
   }
 }
@@ -35,11 +31,7 @@ Windows:
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\username\\Desktop"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Users\\username\\Desktop"]
     }
   }
 }

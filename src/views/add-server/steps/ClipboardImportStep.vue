@@ -4,7 +4,11 @@ import { AlertCircle, Globe, Terminal, RefreshCw } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useClipboardParser, type ParsedServer, type ParseResult } from '../composables/useClipboardParser';
+import {
+  useClipboardParser,
+  type ParsedServer,
+  type ParseResult,
+} from '../composables/useClipboardParser';
 
 const props = defineProps<{
   isSubmitting: boolean;
@@ -174,7 +178,11 @@ function canSubmit(): boolean {
         <!-- Submit Button -->
         <div class="flex justify-end pt-4">
           <Button @click="handleSubmit" :disabled="!canSubmit()">
-            {{ isSubmitting ? 'Importing...' : `Import ${editableServers.length} Server${editableServers.length > 1 ? 's' : ''}` }}
+            {{
+              isSubmitting
+                ? 'Importing...'
+                : `Import ${editableServers.length} Server${editableServers.length > 1 ? 's' : ''}`
+            }}
           </Button>
         </div>
       </template>
