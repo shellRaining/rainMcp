@@ -27,7 +27,9 @@ export const useAgentsStore = defineStore('agents', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      agents.value = await getSupportedAgents();
+      const fetchedAgents = await getSupportedAgents();
+      // 按名称字母序排序
+      agents.value = fetchedAgents.sort((a, b) => a.name.localeCompare(b.name));
       // 只从 enabled agents 中选择，没有则不选中
       if (!selectedAgentName.value) {
         const firstEnabled = agents.value.find((a) => a.enabled);
