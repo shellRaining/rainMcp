@@ -2,8 +2,8 @@
 import { onMounted } from 'vue';
 import { Server, Plus, RefreshCw, Globe, Terminal, Package } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useServersStore } from '@/stores/servers';
 import { useAppStore } from '@/stores/app';
 import { useAddServerWindow } from '@/composables/useAddServerWindow';
@@ -116,17 +116,24 @@ async function handleRefreshSchema() {
           >
             <div class="flex items-center gap-3">
               <!-- Icon -->
-              <div class="shrink-0 w-10 h-10 rounded-md bg-muted flex items-center justify-center">
-                <component :is="getServerTypeIcon(server)" class="h-5 w-5 text-muted-foreground" />
-              </div>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div
+                    class="shrink-0 w-10 h-10 rounded-md bg-muted flex items-center justify-center"
+                  >
+                    <component
+                      :is="getServerTypeIcon(server)"
+                      class="h-5 w-5 text-muted-foreground"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent class="text-xs">
+                  {{ getServerTypeLabel(server) }}
+                </TooltipContent>
+              </Tooltip>
               <!-- Info -->
               <div class="min-w-0 flex-1">
                 <h3 class="font-medium truncate">{{ server.name }}</h3>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <Badge variant="secondary" class="text-xs">
-                    {{ getServerTypeLabel(server) }}
-                  </Badge>
-                </div>
               </div>
             </div>
           </div>

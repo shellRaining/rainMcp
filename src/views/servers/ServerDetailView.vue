@@ -3,13 +3,13 @@ import { computed, ref } from 'vue';
 import { Server, Globe, Terminal, Package, Trash2, Send, Copy, Check } from 'lucide-vue-next';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -205,9 +205,18 @@ async function handleCopyConfig() {
       <header class="shrink-0 px-6 py-4 border-b" data-tauri-drag-region>
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0 flex-1">
-            <div class="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-              <component :is="serverTypeIcon" class="h-5 w-5 text-muted-foreground" />
-            </div>
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <div
+                  class="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 cursor-help"
+                >
+                  <component :is="serverTypeIcon" class="h-5 w-5 text-muted-foreground" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent class="text-xs">
+                {{ serverTypeLabel }}
+              </TooltipContent>
+            </Tooltip>
             <div class="min-w-0 flex-1">
               <Input
                 :model-value="server.name"
@@ -215,9 +224,6 @@ async function handleCopyConfig() {
                 @blur="saveServer"
                 class="h-8 text-lg font-semibold tracking-tight px-0 border-0 focus-visible:ring-0 bg-transparent"
               />
-              <Badge variant="secondary" class="text-xs">
-                {{ serverTypeLabel }}
-              </Badge>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
