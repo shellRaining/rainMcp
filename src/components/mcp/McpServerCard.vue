@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Terminal, Globe, Copy, Check, ChevronDown, Clock } from 'lucide-vue-next';
+import { ref, computed, onUnmounted } from 'vue';
+import { Terminal, Globe, Copy, Check, ChevronDown, Clock, Trash2 } from 'lucide-vue-next';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import type { AgentServerEntry } from '@/types/mcp';
 import * as tauriApi from '@/api/tauri';
 import { logger } from '@/utils/logger';
+import { useAgentsStore } from '@/stores/agents';
 
 const props = defineProps<{
   server: AgentServerEntry & { name: string };
   agentName: string;
 }>();
 
+const agentsStore = useAgentsStore();
 const isExpanded = ref(false);
 const isCopied = ref(false);
+const isDeleting = ref(false);
+const isDeleteArmed = ref(false);
+let deleteArmTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const isLocal = computed(() => props.server.type === 'local');
 
@@ -34,11 +39,13 @@ const formattedArgs = computed(() => {
 });
 
 function toggleExpand() {
+  disarmDelete();
   isExpanded.value = !isExpanded.value;
 }
 
 async function handleCopy(event: Event) {
   event.stopPropagation();
+  disarmDelete();
   try {
     const rawConfig = await tauriApi.getServerRawConfig(props.agentName, props.server.name);
     await writeText(rawConfig);
@@ -50,6 +57,53 @@ async function handleCopy(event: Event) {
     logger.error('Failed to copy config:', error);
   }
 }
+
+function disarmDelete() {
+  isDeleteArmed.value = false;
+  if (deleteArmTimeout) {
+    clearTimeout(deleteArmTimeout);
+    deleteArmTimeout = null;
+  }
+}
+
+function handleDeleteClick(event: Event) {
+  event.stopPropagation();
+  if (isDeleting.value) return;
+
+  if (!isDeleteArmed.value) {
+    isDeleteArmed.value = true;
+    deleteArmTimeout = setTimeout(() => {
+      disarmDelete();
+    }, 2500);
+    return;
+  }
+
+  disarmDelete();
+  void handleDelete();
+}
+
+async function handleDelete() {
+  isDeleting.value = true;
+  try {
+    const agent = agentsStore.agents.find((a) => a.name === props.agentName);
+    const servers = agent?.mcp_config?.servers;
+    if (!servers || !(props.server.name in servers)) return;
+
+    const nextServers = { ...servers };
+    delete nextServers[props.server.name];
+
+    await agentsStore.updateMcpConfig(props.agentName, { servers: nextServers });
+    await agentsStore.fetchAgents();
+  } catch (error) {
+    logger.error('Failed to delete server from agent:', error);
+  } finally {
+    isDeleting.value = false;
+  }
+}
+
+onUnmounted(() => {
+  disarmDelete();
+});
 </script>
 
 <template>
@@ -75,6 +129,18 @@ async function handleCopy(event: Event) {
       </div>
       <!-- 操作按钮 -->
       <div class="flex items-center gap-1 shrink-0">
+        <button
+          class="p-1.5 rounded-md transition-colors"
+          :class="
+            isDeleteArmed
+              ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              : 'hover:bg-muted'
+          "
+          :title="isDeleteArmed ? 'Click again to delete' : 'Delete from agent'"
+          @click="handleDeleteClick"
+        >
+          <Trash2 class="h-4 w-4" :class="isDeleteArmed ? '' : 'text-muted-foreground'" />
+        </button>
         <button
           class="p-1.5 rounded-md hover:bg-muted transition-colors"
           title="Copy config"
