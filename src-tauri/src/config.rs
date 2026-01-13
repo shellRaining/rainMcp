@@ -28,6 +28,30 @@ pub fn get_app_config_path() -> Option<PathBuf> {
     dirs::config_dir().map(|p| p.join("rain-mcp").join("settings.json"))
 }
 
+pub fn get_app_config_path_display_string() -> Option<String> {
+    let path = get_app_config_path()?;
+
+    #[cfg(windows)]
+    {
+        return Some(path.to_string_lossy().to_string());
+    }
+
+    #[cfg(not(windows))]
+    {
+        if let Some(home_dir) = dirs::home_dir() {
+            if path.starts_with(&home_dir) {
+                if let Ok(rel) = path.strip_prefix(&home_dir) {
+                    let rel = rel.to_string_lossy();
+                    let rel = rel.as_ref().trim_start_matches('/');
+                    return Some(format!("~/{}", rel));
+                }
+            }
+        }
+
+        Some(path.to_string_lossy().to_string())
+    }
+}
+
 pub fn load_app_config() -> AppConfig {
     let path = match get_app_config_path() {
         Some(p) => p,

@@ -177,6 +177,26 @@ pub fn update_app_config_command(config: AppConfig) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn get_app_config_path_command() -> Result<String, String> {
+    crate::config::get_app_config_path_display_string()
+        .ok_or_else(|| "Could not determine config path".to_string())
+}
+
+#[tauri::command]
+pub fn open_app_config_file_command() -> Result<(), String> {
+    let path = crate::config::get_app_config_path().ok_or("Could not determine config path")?;
+
+    if !path.exists() {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+        std::fs::write(&path, "{}").map_err(|e| e.to_string())?;
+    }
+
+    open::that(path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub fn open_config_file_command(agent_name: String) -> Result<(), String> {
     let agent = parse_agent_name(&agent_name)?;
     let path = agent::get_global_config_path(agent)?;

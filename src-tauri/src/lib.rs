@@ -67,6 +67,8 @@ pub fn run() {
             mcp::update_enabled_agents_command,
             mcp::get_app_config_command,
             mcp::update_app_config_command,
+            mcp::get_app_config_path_command,
+            mcp::open_app_config_file_command,
             mcp::open_config_file_command,
             mcp::refresh_schema_store_command,
             mcp::get_schema_store_command,

@@ -48,6 +48,14 @@ export async function updateAppConfig(config: AppConfig): Promise<void> {
   return invoke('update_app_config_command', { config });
 }
 
+export async function getAppConfigPath(): Promise<string> {
+  return invoke('get_app_config_path_command');
+}
+
+export async function openAppConfigFile(): Promise<void> {
+  return invoke('open_app_config_file_command');
+}
+
 // ===== Schema Store APIs =====
 
 export async function getSchemaStore(): Promise<SchemaStore> {

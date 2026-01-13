@@ -2,7 +2,10 @@
 import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, AlertCircle } from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2, AlertCircle, Eye, EyeOff, FolderOpen, Check } from 'lucide-vue-next';
 import ChatMessageBubble, {
   type ContentItem,
   type MessageData,
@@ -10,6 +13,7 @@ import ChatMessageBubble, {
 import ChatInput from '@/components/chat/ChatInput.vue';
 import * as api from '@/api/tauri';
 import type { GeneratedSchema, StreamEvent } from '@/api/tauri';
+import { logger } from '@/utils/logger';
 
 defineProps<{
   isSubmitting: boolean;
@@ -24,6 +28,11 @@ const inputValue = ref('');
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const hasApiKey = ref(false);
+const appConfigPath = ref('~/.config/rain-mcp/settings.json');
+const apiKeyInput = ref('');
+const apiKeyError = ref<string | null>(null);
+const isSavingApiKey = ref(false);
+const isApiKeyVisible = ref(false);
 const messagesEndRef = ref<HTMLDivElement | null>(null);
 
 // Message queue for sending while loading
@@ -60,6 +69,39 @@ const displayMessages = computed(() => {
 
   return result;
 });
+
+const apiKeyInputType = computed(() => (isApiKeyVisible.value ? 'text' : 'password'));
+
+async function handleSaveApiKey() {
+  apiKeyError.value = null;
+  const key = apiKeyInput.value.trim();
+  if (!key) {
+    apiKeyError.value = 'Please enter your OpenRouter API key.';
+    return;
+  }
+
+  isSavingApiKey.value = true;
+  try {
+    await api.setOpenRouterApiKey(key);
+    hasApiKey.value = true;
+    apiKeyInput.value = '';
+  } catch (e) {
+    apiKeyError.value = String(e);
+    logger.error('Failed to save OpenRouter API key:', e);
+  } finally {
+    isSavingApiKey.value = false;
+  }
+}
+
+async function handleOpenAppConfigFile() {
+  apiKeyError.value = null;
+  try {
+    await api.openAppConfigFile();
+  } catch (e) {
+    apiKeyError.value = String(e);
+    logger.error('Failed to open app config file:', e);
+  }
+}
 
 // Process queue when loading finishes
 watch(isLoading, async (loading) => {
@@ -157,6 +199,12 @@ async function setupStreamListener() {
 
 onMounted(async () => {
   try {
+    appConfigPath.value = await api.getAppConfigPath();
+  } catch {
+    // Ignore and use default fallback
+  }
+
+  try {
     const key = await api.getOpenRouterApiKey();
     hasApiKey.value = !!key;
   } catch {
@@ -250,10 +298,55 @@ async function scrollToBottom() {
         <p class="text-sm text-muted-foreground mb-4">
           To use AI Assistant, please add your OpenRouter API key to the configuration file:
         </p>
-        <code class="text-xs bg-muted p-2 rounded block mb-4">
-          ~/.config/rain-mcp/settings.json
-        </code>
-        <p class="text-xs text-muted-foreground">Add: "openrouter_api_key": "your-api-key-here"</p>
+
+        <div class="space-y-3 text-left">
+          <div class="space-y-2">
+            <Label for="openrouter-api-key">OpenRouter API Key</Label>
+            <div class="flex gap-2">
+              <Input
+                id="openrouter-api-key"
+                v-model="apiKeyInput"
+                :type="apiKeyInputType"
+                placeholder="Paste your OpenRouter API key"
+                class="flex-1"
+                @keydown.enter.prevent="handleSaveApiKey"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-9 w-9"
+                :title="isApiKeyVisible ? 'Hide API key' : 'Show API key'"
+                @click="isApiKeyVisible = !isApiKeyVisible"
+              >
+                <EyeOff v-if="isApiKeyVisible" class="h-4 w-4" />
+                <Eye v-else class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-9 w-9"
+                :title="`Open config file: ${appConfigPath}`"
+                @click="handleOpenAppConfigFile"
+              >
+                <FolderOpen class="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                class="h-9 w-9"
+                :disabled="isSavingApiKey || !apiKeyInput.trim()"
+                title="Save API key"
+                @click="handleSaveApiKey"
+              >
+                <Loader2 v-if="isSavingApiKey" class="h-4 w-4 animate-spin" />
+                <Check v-else class="h-4 w-4" />
+              </Button>
+            </div>
+            <p v-if="apiKeyError" class="text-xs text-destructive select-text">
+              {{ apiKeyError }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 

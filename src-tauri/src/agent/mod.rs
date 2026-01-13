@@ -4,17 +4,21 @@ pub mod chat;
 pub mod tools;
 pub mod types;
 
-use crate::config::{load_app_config, save_app_config};
+use crate::config::{get_app_config_path_display_string, load_app_config, save_app_config};
 use tauri::AppHandle;
 use types::ChatMessage;
+
+fn missing_openrouter_key_error() -> String {
+    let path = get_app_config_path_display_string()
+        .unwrap_or_else(|| "the app configuration file".to_string());
+    format!("OpenRouter API key not configured. Please add 'openrouter_api_key' to {}", path)
+}
 
 /// Send a chat message to the AI agent
 #[tauri::command]
 pub async fn agent_chat_command(message: String) -> Result<ChatMessage, String> {
     let config = load_app_config();
-    let api_key = config
-        .openrouter_api_key
-        .ok_or("OpenRouter API key not configured. Please add 'openrouter_api_key' to ~/.config/rain-mcp/settings.json")?;
+    let api_key = config.openrouter_api_key.ok_or_else(missing_openrouter_key_error)?;
 
     chat::send_message(&api_key, &message).await
 }
@@ -23,9 +27,7 @@ pub async fn agent_chat_command(message: String) -> Result<ChatMessage, String> 
 #[tauri::command]
 pub async fn agent_chat_stream_command(app: AppHandle, message: String) -> Result<(), String> {
     let config = load_app_config();
-    let api_key = config
-        .openrouter_api_key
-        .ok_or("OpenRouter API key not configured. Please add 'openrouter_api_key' to ~/.config/rain-mcp/settings.json")?;
+    let api_key = config.openrouter_api_key.ok_or_else(missing_openrouter_key_error)?;
 
     chat::send_message_stream(app, &api_key, &message).await
 }
