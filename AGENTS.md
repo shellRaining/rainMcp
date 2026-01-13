@@ -38,3 +38,9 @@
    6. 下载的文件默认没有执行权限
    7. 磁盘大小有限，不要无限写
    8. 用户当前的版本不一定是上一个版本，可能跨版本升级。持久存储要做好数据兼容
+
+## Git Hook 规则
+
+1. 项目不使用任何 git hook 机制，不要新增或恢复 hooks 相关目录或脚本（例如 .husky、.git/hooks、lefthook 等）
+2. 不要添加或保留与 git hook 绑定的依赖、配置或脚本（例如 husky、lint-staged、prepare 等）
+3. 需要执行的检查统一通过显式命令运行，具体可以看 `package.json` 中的 script 脚本
