@@ -22,13 +22,13 @@ pub use agent::{get_all_agent_types, parse_agent_name, AgentType, SupportedAgent
 // Agent server entry types (internal representation of agent config)
 // ============================================================================
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct BaseServerEntry {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<u32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct LocalServerEntry {
     #[serde(flatten)]
     pub base: BaseServerEntry,
@@ -42,7 +42,7 @@ pub struct LocalServerEntry {
     pub env: Option<HashMap<String, String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct RemoteServerEntry {
     #[serde(flatten)]
     pub base: BaseServerEntry,
@@ -53,7 +53,7 @@ pub struct RemoteServerEntry {
     pub headers: Option<HashMap<String, String>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum AgentServerEntry {
     Local(LocalServerEntry),
@@ -247,6 +247,14 @@ pub fn add_user_server_command(
     // Check for duplicate ID
     if app_config.user_servers.iter().any(|s| s.id == server.id) {
         return Err(format!("Server with ID '{}' already exists", server.id));
+    }
+
+    // Check for duplicate config
+    if let Some(existing) = app_config.user_servers.iter().find(|s| s.config == server.config) {
+        return Err(format!(
+            "Server with identical config already exists: '{}'",
+            existing.name
+        ));
     }
 
     // Add created_at timestamp if not provided
