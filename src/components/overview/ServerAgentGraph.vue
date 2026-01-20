@@ -25,6 +25,15 @@ const serversStore = useServersStore();
 
 const containerRef = ref<HTMLDivElement>();
 const focusedNodeId = ref<string | null>(null);
+const animatingNodeId = ref<string | null>(null);
+const animatingNodeStartPos = ref<{ x: number; y: number } | null>(null);
+
+// Track newly created edges for animation
+const newEdgeAnimation = ref<{
+  sourceId: string;
+  targetId: string;
+  sourcePos: { x: number; y: number };
+} | null>(null);
 
 let svg: d3.Selection<SVGSVGElement, unknown, null, undefined> | null = null;
 
@@ -169,14 +178,53 @@ function renderGraph() {
   const g = svg.append('g').attr('class', 'graph-content');
 
   // Draw edges
-  g.selectAll<SVGLineElement, GraphEdge>('line.edge')
+  const edgeLines = g
+    .selectAll<SVGLineElement, GraphEdge>('line.edge')
     .data(edges)
     .join('line')
     .attr('class', 'edge')
-    .attr('x1', (d) => nodes.find((n) => n.id === d.source)?.x ?? 0)
-    .attr('y1', (d) => nodes.find((n) => n.id === d.source)?.y ?? 0)
-    .attr('x2', (d) => nodes.find((n) => n.id === d.target)?.x ?? 0)
-    .attr('y2', (d) => nodes.find((n) => n.id === d.target)?.y ?? 0)
+    .attr('x1', (d) => {
+      // For new edge, start from the dragged position
+      if (
+        newEdgeAnimation.value &&
+        d.source === newEdgeAnimation.value.sourceId &&
+        d.target === newEdgeAnimation.value.targetId
+      ) {
+        return newEdgeAnimation.value.sourcePos.x;
+      }
+      return nodes.find((n) => n.id === d.source)?.x ?? 0;
+    })
+    .attr('y1', (d) => {
+      if (
+        newEdgeAnimation.value &&
+        d.source === newEdgeAnimation.value.sourceId &&
+        d.target === newEdgeAnimation.value.targetId
+      ) {
+        return newEdgeAnimation.value.sourcePos.y;
+      }
+      return nodes.find((n) => n.id === d.source)?.y ?? 0;
+    })
+    .attr('x2', (d) => {
+      // For new edge, start x2 from the dragged position too
+      if (
+        newEdgeAnimation.value &&
+        d.source === newEdgeAnimation.value.sourceId &&
+        d.target === newEdgeAnimation.value.targetId
+      ) {
+        return newEdgeAnimation.value.sourcePos.x;
+      }
+      return nodes.find((n) => n.id === d.target)?.x ?? 0;
+    })
+    .attr('y2', (d) => {
+      if (
+        newEdgeAnimation.value &&
+        d.source === newEdgeAnimation.value.sourceId &&
+        d.target === newEdgeAnimation.value.targetId
+      ) {
+        return newEdgeAnimation.value.sourcePos.y;
+      }
+      return nodes.find((n) => n.id === d.target)?.y ?? 0;
+    })
     .attr('stroke', colors.edge)
     .attr('stroke-width', 2)
     .attr('stroke-opacity', (d) => (isEdgeConnectedToFocused(d) ? 0.7 : 0.15))
@@ -193,6 +241,27 @@ function renderGraph() {
       event.stopPropagation();
       await handleEdgeDelete(d);
     });
+
+  // Animate newly created edge: expand from source point to full line
+  if (newEdgeAnimation.value) {
+    const animData = newEdgeAnimation.value;
+    const sourceNode = nodes.find((n) => n.id === animData.sourceId);
+    const targetNode = nodes.find((n) => n.id === animData.targetId);
+    if (sourceNode && targetNode) {
+      edgeLines
+        .filter((d) => d.source === animData.sourceId && d.target === animData.targetId)
+        .transition()
+        .duration(300)
+        .ease(d3.easeQuadOut)
+        .attr('x1', sourceNode.x)
+        .attr('y1', sourceNode.y)
+        .attr('x2', targetNode.x)
+        .attr('y2', targetNode.y)
+        .on('end', () => {
+          newEdgeAnimation.value = null;
+        });
+    }
+  }
 
   // Drag line (initially hidden)
   const dragLine = g
@@ -250,10 +319,52 @@ function renderGraph() {
         dragLine.attr('x1', d.x).attr('y1', d.y).attr('x2', d.x).attr('y2', d.y).attr('opacity', 1);
         d3.select(this).style('cursor', 'grabbing');
       })
-      .on('drag', function (event) {
+      .on('drag', function (event, d) {
         dragState.value.currentX = event.x;
         dragState.value.currentY = event.y;
-        dragLine.attr('x2', event.x).attr('y2', event.y);
+
+        // 计算拖拽距离
+        const dragDistX = event.x - d.x;
+        const dragDistY = event.y - d.y;
+        const dragDist = Math.sqrt(dragDistX * dragDistX + dragDistY * dragDistY);
+
+        // 弹簧效果：只有当拖拽距离超过阈值时，小球才开始移动
+        const threshold = 30;
+        const damping = 0.3;
+        const maxRadius = 50; // 小球最大移动半径
+
+        let newX = d.x;
+        let newY = d.y;
+
+        if (dragDist > threshold) {
+          const pullDist = dragDist - threshold;
+          const moveRatio = (pullDist * damping) / dragDist;
+          const offsetX = dragDistX * moveRatio;
+          const offsetY = dragDistY * moveRatio;
+
+          // 使用渐近函数实现"逼近"效果，而不是硬性限制
+          const offsetDist = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+          const asymptoteK = 30; // 控制渐近速度
+          const moveDistance = (offsetDist * maxRadius) / (offsetDist + asymptoteK);
+          const scale = moveDistance / offsetDist;
+          newX = d.x + offsetX * scale;
+          newY = d.y + offsetY * scale;
+        }
+
+        // 保存当前位置，用于回弹动画
+        animatingNodeStartPos.value = { x: newX, y: newY };
+
+        // 更新节点位置
+        d3.select(this).attr('transform', `translate(${newX},${newY})`);
+
+        // 更新拖拽线
+        dragLine.attr('x1', newX).attr('y1', newY).attr('x2', event.x).attr('y2', event.y);
+
+        // 更新与该节点相关的所有连接线
+        g.selectAll<SVGLineElement, GraphEdge>('line.edge')
+          .filter((e) => e.source === d.id)
+          .attr('x1', newX)
+          .attr('y1', newY);
 
         // Highlight agent nodes near cursor
         agentNodeGroups.select('rect').attr('stroke', (d) => {
@@ -275,8 +386,35 @@ function renderGraph() {
           return dist < 50;
         });
 
+        // 立即创建连接，让新连线出现
         if (targetAgent && sourceNode) {
-          await handleCreateConnection(sourceNode, targetAgent);
+          // 标记正在动画的节点
+          animatingNodeId.value = sourceNode.id;
+
+          // Pass the current dragged position for edge animation
+          const currentPos = animatingNodeStartPos.value || { x: sourceNode.x, y: sourceNode.y };
+          await handleCreateConnection(sourceNode, targetAgent, currentPos);
+
+          // 动画结束后清除标记
+          setTimeout(() => {
+            animatingNodeId.value = null;
+            animatingNodeStartPos.value = null;
+          }, 300);
+        } else {
+          // 没有连接目标，直接执行回弹动画
+          d3.select(this)
+            .transition()
+            .duration(300)
+            .ease(d3.easeBackOut)
+            .attr('transform', `translate(${sourceNode.x},${sourceNode.y})`);
+
+          g.selectAll<SVGLineElement, GraphEdge>('line.edge')
+            .filter((e) => e.source === sourceNode.id)
+            .transition()
+            .duration(300)
+            .ease(d3.easeBackOut)
+            .attr('x1', sourceNode.x)
+            .attr('y1', sourceNode.y);
         }
 
         // Reset highlights
@@ -326,6 +464,43 @@ function renderGraph() {
     .attr('font-weight', '500')
     .attr('fill', colors.agentText)
     .attr('pointer-events', 'none');
+
+  // 如果有节点正在动画，重新应用回弹动画
+  if (animatingNodeId.value && animatingNodeStartPos.value) {
+    const animatingNode = nodes.find((n) => n.id === animatingNodeId.value);
+    if (animatingNode) {
+      // 先将节点设置到拖动后的位置
+      serverNodeGroups
+        .filter((d) => d.id === animatingNodeId.value)
+        .attr('transform', `translate(${animatingNodeStartPos.value.x},${animatingNodeStartPos.value.y})`)
+        .transition()
+        .duration(300)
+        .ease(d3.easeBackOut)
+        .attr('transform', `translate(${animatingNode.x},${animatingNode.y})`);
+
+      // 对相关连接线应用回弹动画（排除新边，新边有自己的动画）
+      g.selectAll<SVGLineElement, GraphEdge>('line.edge')
+        .filter((e) => {
+          if (e.source !== animatingNodeId.value) return false;
+          // Skip the new edge as it has its own animation
+          if (
+            newEdgeAnimation.value &&
+            e.source === newEdgeAnimation.value.sourceId &&
+            e.target === newEdgeAnimation.value.targetId
+          ) {
+            return false;
+          }
+          return true;
+        })
+        .attr('x1', animatingNodeStartPos.value.x)
+        .attr('y1', animatingNodeStartPos.value.y)
+        .transition()
+        .duration(300)
+        .ease(d3.easeBackOut)
+        .attr('x1', animatingNode.x)
+        .attr('y1', animatingNode.y);
+    }
+  }
 }
 
 function truncateText(text: string, maxLen: number): string {
@@ -340,7 +515,11 @@ function handleNodeClick(nodeId: string) {
   }
 }
 
-async function handleCreateConnection(sourceNode: GraphNode, targetNode: GraphNode) {
+async function handleCreateConnection(
+  sourceNode: GraphNode,
+  targetNode: GraphNode,
+  sourceCurrentPos?: { x: number; y: number }
+) {
   const serverId = sourceNode.name;
   const agentName = targetNode.name;
 
@@ -354,6 +533,13 @@ async function handleCreateConnection(sourceNode: GraphNode, targetNode: GraphNo
   if (agent?.mcp_config?.servers && server.name in agent.mcp_config.servers) {
     return; // Already connected
   }
+
+  // Set up animation data for the new edge
+  newEdgeAnimation.value = {
+    sourceId: sourceNode.id,
+    targetId: targetNode.id,
+    sourcePos: sourceCurrentPos || { x: sourceNode.x, y: sourceNode.y },
+  };
 
   // Deploy server to agent
   await serversStore.deployToAgent(agentName, serverId);
@@ -372,13 +558,14 @@ async function handleEdgeDelete(edge: GraphEdge) {
   await agentsStore.fetchAgents();
 }
 
-// Handle resize with debounce
-let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+// Handle resize with requestAnimationFrame
+let resizeRAF: number | null = null;
 function handleResize() {
-  if (resizeTimeout) clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
+  if (resizeRAF) cancelAnimationFrame(resizeRAF);
+  resizeRAF = requestAnimationFrame(() => {
     renderGraph();
-  }, 100);
+    resizeRAF = null;
+  });
 }
 
 onMounted(() => {
@@ -390,8 +577,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
-  if (resizeTimeout) {
-    clearTimeout(resizeTimeout);
+  if (resizeRAF) {
+    cancelAnimationFrame(resizeRAF);
   }
 });
 
