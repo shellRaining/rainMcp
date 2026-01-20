@@ -230,6 +230,7 @@ function renderGraph() {
     .attr('stroke-opacity', (d) => (isEdgeConnectedToFocused(d) ? 0.7 : 0.15))
     .style('cursor', 'pointer')
     .on('mouseenter', function () {
+      if (dragState.value.active) return;
       d3.select(this).attr('stroke', colors.edgeHover).attr('stroke-opacity', 1);
     })
     .on('mouseleave', function (_, d) {
@@ -248,8 +249,13 @@ function renderGraph() {
     const sourceNode = nodes.find((n) => n.id === animData.sourceId);
     const targetNode = nodes.find((n) => n.id === animData.targetId);
     if (sourceNode && targetNode) {
-      edgeLines
-        .filter((d) => d.source === animData.sourceId && d.target === animData.targetId)
+      const newEdge = edgeLines.filter(
+        (d) => d.source === animData.sourceId && d.target === animData.targetId
+      );
+      // 先设置高亮颜色
+      newEdge.attr('stroke', colors.dragLine).attr('stroke-opacity', 1);
+      // 展开动画
+      newEdge
         .transition()
         .duration(300)
         .ease(d3.easeQuadOut)
@@ -257,6 +263,10 @@ function renderGraph() {
         .attr('y1', sourceNode.y)
         .attr('x2', targetNode.x)
         .attr('y2', targetNode.y)
+        .transition()
+        .duration(500)
+        .attr('stroke', colors.edge)
+        .attr('stroke-opacity', 0.7)
         .on('end', () => {
           newEdgeAnimation.value = null;
         });
