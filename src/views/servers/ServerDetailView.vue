@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Server, Globe, Terminal, Package, Trash2, Send, Copy, Check } from 'lucide-vue-next';
+import { Server, Globe, Terminal, Package, Trash2, Copy, Check } from 'lucide-vue-next';
+import AgentIcon from '@/components/agents/AgentIcon.vue';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -378,7 +379,7 @@ async function handleCopyConfig() {
                 :disabled="isDeploying"
                 @click="handleDeploy(agent.name)"
               >
-                <Send class="h-4 w-4 mr-2" />
+                <AgentIcon :agent-type="agent.agent_type" :size="16" class="mr-2" />
                 {{ agent.name }}
               </Button>
             </div>
