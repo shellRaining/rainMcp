@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { Bot, Server, Activity } from 'lucide-vue-next';
+import { Bot, Server } from 'lucide-vue-next';
 import { useAgentsStore } from '@/stores/agents';
 import { useServersStore } from '@/stores/servers';
 import ServerAgentGraph from '@/components/overview/ServerAgentGraph.vue';
@@ -33,7 +33,7 @@ const stats = computed(() => {
     <!-- Content -->
     <div class="flex-1 flex flex-col overflow-hidden p-6">
       <!-- Stats Cards -->
-      <div class="shrink-0 grid grid-cols-3 gap-4 mb-6">
+      <div class="shrink-0 grid grid-cols-2 gap-4 mb-6">
         <div class="p-4 rounded-lg bg-accent/50 border">
           <div class="flex items-center gap-2 text-muted-foreground mb-2">
             <Bot class="h-4 w-4" />
@@ -51,14 +51,6 @@ const stats = computed(() => {
             <span class="text-xs font-medium uppercase tracking-wider">Servers</span>
           </div>
           <p class="text-2xl font-semibold">{{ stats.serverCount }}</p>
-        </div>
-
-        <div class="p-4 rounded-lg bg-accent/50 border">
-          <div class="flex items-center gap-2 text-muted-foreground mb-2">
-            <Activity class="h-4 w-4" />
-            <span class="text-xs font-medium uppercase tracking-wider">Status</span>
-          </div>
-          <p class="text-2xl font-semibold text-green-500">Active</p>
         </div>
       </div>
 
