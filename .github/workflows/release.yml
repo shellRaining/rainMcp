@@ -51,6 +51,15 @@ jobs:
       - name: Install frontend dependencies
         run: bun install
 
+      - name: Generate changelog
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref_name }}
+          excludeTypes: build,docs,other,style,chore
+          writeToFile: false
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,13 +69,18 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 'Rain MCP ${{ github.ref_name }}'
           releaseBody: |
-            ## Installation
+            ${{ steps.changelog.outputs.changes }}
 
-            ### macOS
-            If you see "rainMcp is damaged and can't be opened", run:
+            ---
+
+            <details>
+            <summary>macOS 安装说明</summary>
+
+            如果遇到"rainMcp 已损坏无法打开"提示，请运行：
             ```bash
             xattr -cr /Applications/rainMcp.app
             ```
+            </details>
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}

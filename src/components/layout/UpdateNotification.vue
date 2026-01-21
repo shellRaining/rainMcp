@@ -6,7 +6,8 @@ import MarkdownRender from 'markstream-vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
-const showNotification = ref(false);
+const showBadge = ref(false);
+const showModal = ref(false);
 const updateVersion = ref('');
 const updateNotes = ref('');
 const isDownloading = ref(false);
@@ -25,7 +26,7 @@ async function checkForUpdates() {
       pendingUpdate = result;
       updateVersion.value = result.version;
       updateNotes.value = result.body || '';
-      showNotification.value = true;
+      showBadge.value = true;
     }
   } catch (error) {
     console.error('检查更新失败:', error);
@@ -79,76 +80,110 @@ async function installUpdate() {
 }
 
 function dismissNotification() {
-  showNotification.value = false;
+  showModal.value = false;
+}
+
+function openModal() {
+  showModal.value = true;
 }
 </script>
 
 <template>
-  <Transition name="slide-down">
-    <Card
-      v-if="showNotification"
-      class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[600px] p-4 shadow-lg border-2 border-primary/20"
+  <Transition name="badge-fade">
+    <button
+      v-if="showBadge && !showModal"
+      class="fixed top-4 right-4 z-50 px-3 py-1 -m-1 bg-primary text-primary-foreground text-xs font-medium rounded-full shadow-lg hover:bg-primary/90 transition-colors leading-normal"
+      @click="openModal"
     >
-      <div class="flex items-start gap-4">
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-sm font-medium">发现新版本 {{ updateVersion }}</span>
-          </div>
-          <div
-            v-if="updateNotes"
-            class="update-notes text-xs text-muted-foreground max-h-16 overflow-hidden"
-          >
-            <MarkdownRender :content="updateNotes" />
-          </div>
+      发现新版本 {{ updateVersion }}
+    </button>
+  </Transition>
 
-          <div v-if="isDownloading" class="mt-3">
-            <div class="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <span>下载中...</span>
-              <span>{{ downloadProgress }}%</span>
+  <Transition name="modal-fade">
+    <div
+      v-if="showModal"
+      class="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/50"
+      @click.self="dismissNotification"
+    >
+      <Card class="w-[600px] p-6 shadow-xl">
+        <div class="flex items-start gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-base font-semibold">发现新版本 {{ updateVersion }}</span>
             </div>
-            <div class="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-              <div
-                class="h-full bg-primary transition-all duration-300"
-                :style="{ width: `${downloadProgress}%` }"
-              />
+            <div
+              v-if="updateNotes"
+              class="update-notes text-sm text-muted-foreground max-h-96 overflow-y-auto mb-4"
+            >
+              <MarkdownRender :content="updateNotes" />
             </div>
-          </div>
 
-          <p
-            v-if="errorMessage"
-            class="mt-2 text-xs text-destructive whitespace-pre-wrap break-words"
-          >
-            {{ errorMessage }}
-          </p>
+            <div v-if="isDownloading" class="mt-4">
+              <div class="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                <span>下载中...</span>
+                <span>{{ downloadProgress }}%</span>
+              </div>
+              <div class="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-primary transition-all duration-300"
+                  :style="{ width: `${downloadProgress}%` }"
+                />
+              </div>
+            </div>
+
+            <p
+              v-if="errorMessage"
+              class="mt-3 text-sm text-destructive whitespace-pre-wrap break-words"
+            >
+              {{ errorMessage }}
+            </p>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <Button v-if="!isDownloading" variant="ghost" size="sm" @click="dismissNotification">
-            稍后
-          </Button>
-          <Button size="sm" :disabled="isDownloading" @click="installUpdate">
+        <div class="flex items-center justify-end gap-2 mt-4">
+          <Button v-if="!isDownloading" variant="ghost" @click="dismissNotification"> 稍后 </Button>
+          <Button :disabled="isDownloading" @click="installUpdate">
             {{ isDownloading ? '更新中...' : '立即更新' }}
           </Button>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   </Transition>
 </template>
 
 <style scoped>
-.slide-down-enter-active,
-.slide-down-leave-active {
+.badge-fade-enter-active,
+.badge-fade-leave-active {
   transition: all 0.3s ease;
 }
 
-.slide-down-enter-from {
+.badge-fade-enter-from,
+.badge-fade-leave-to {
   opacity: 0;
-  transform: translate(-50%, -20px);
+  transform: translateY(-10px);
 }
 
-.slide-down-leave-to {
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
   opacity: 0;
-  transform: translate(-50%, -20px);
+}
+
+.modal-fade-enter-active .card,
+.modal-fade-leave-active .card {
+  transition: transform 0.3s ease;
+}
+
+.modal-fade-enter-from .card {
+  transform: scale(0.95);
+}
+
+.modal-fade-leave-to .card {
+  transform: scale(0.95);
 }
 
 .update-notes :deep(.markstream-vue) {
@@ -163,10 +198,18 @@ function dismissNotification() {
 .update-notes :deep(.heading-4),
 .update-notes :deep(.heading-5),
 .update-notes :deep(.heading-6) {
-  font-size: inherit !important;
-  line-height: inherit !important;
-  margin: 0 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+  margin: 0.5rem 0 !important;
   font-weight: 600 !important;
+}
+
+.update-notes :deep(.heading-1) {
+  font-size: 1rem !important;
+}
+
+.update-notes :deep(.paragraph-node) {
+  margin: 0.5rem 0 !important;
 }
 
 .update-notes :deep(.blockquote) {
@@ -177,8 +220,42 @@ function dismissNotification() {
 }
 
 .update-notes :deep(.list-node) {
-  margin: 0 !important;
+  margin: 0.5rem 0 !important;
   padding-left: 1.25em !important;
+}
+
+.update-notes :deep(.list-item-node) {
+  margin: 0.25rem 0 !important;
+}
+
+.update-notes :deep(hr) {
+  border-color: hsl(var(--border)) !important;
+  opacity: 0.5 !important;
+  margin: 0.75rem 0 !important;
+}
+
+.update-notes :deep(details) {
+  overflow: hidden;
+}
+
+.update-notes :deep(details summary) {
+  cursor: pointer;
+  user-select: none;
+}
+
+.update-notes :deep(details[open] > *:not(summary)) {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .update-notes :deep(.code-block-container),

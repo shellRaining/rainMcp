@@ -251,10 +251,7 @@ pub fn add_user_server_command(
 
     // Check for duplicate config
     if let Some(existing) = app_config.user_servers.iter().find(|s| s.config == server.config) {
-        return Err(format!(
-            "Server with identical config already exists: '{}'",
-            existing.name
-        ));
+        return Err(format!("Server with identical config already exists: '{}'", existing.name));
     }
 
     // Add created_at timestamp if not provided
