@@ -123,7 +123,7 @@ function isConnectedToFocused(nodeId: string, edges: GraphEdge[]): boolean {
 
 // Check if an edge is connected to the focused node
 function isEdgeConnectedToFocused(edge: GraphEdge): boolean {
-  if (!focusedNodeId.value) return true;
+  if (!focusedNodeId.value) return false;
   return edge.source === focusedNodeId.value || edge.target === focusedNodeId.value;
 }
 
@@ -225,18 +225,25 @@ function renderGraph() {
       }
       return nodes.find((n) => n.id === d.target)?.y ?? 0;
     })
-    .attr('stroke', colors.edge)
-    .attr('stroke-width', 2)
-    .attr('stroke-opacity', (d) => (isEdgeConnectedToFocused(d) ? 0.7 : 0.15))
+    .attr('stroke', (d) => (isEdgeConnectedToFocused(d) ? colors.highlight : colors.edge))
+    .attr('stroke-width', (d) => (isEdgeConnectedToFocused(d) ? 3 : 2))
+    .attr('stroke-opacity', (d) => (focusedNodeId.value ? (isEdgeConnectedToFocused(d) ? 0.9 : 0.15) : 0.7))
     .style('cursor', 'pointer')
     .on('mouseenter', function () {
       if (dragState.value.active) return;
-      d3.select(this).attr('stroke', colors.edgeHover).attr('stroke-opacity', 1);
+      d3.select(this)
+        .transition()
+        .duration(200)
+        .attr('stroke', colors.edgeHover)
+        .attr('stroke-opacity', 1);
     })
     .on('mouseleave', function (_, d) {
       d3.select(this)
-        .attr('stroke', colors.edge)
-        .attr('stroke-opacity', isEdgeConnectedToFocused(d) ? 0.7 : 0.15);
+        .transition()
+        .duration(200)
+        .attr('stroke', isEdgeConnectedToFocused(d) ? colors.highlight : colors.edge)
+        .attr('stroke-width', isEdgeConnectedToFocused(d) ? 3 : 2)
+        .attr('stroke-opacity', focusedNodeId.value ? (isEdgeConnectedToFocused(d) ? 0.9 : 0.15) : 0.7);
     })
     .on('click', async (event, d) => {
       event.stopPropagation();
@@ -267,6 +274,7 @@ function renderGraph() {
         .duration(500)
         .attr('stroke', colors.edge)
         .attr('stroke-opacity', 0.7)
+        .attr('stroke-width', 2)
         .on('end', () => {
           newEdgeAnimation.value = null;
         });
@@ -603,7 +611,30 @@ watch(
 
 // Watch for focus changes
 watch(focusedNodeId, () => {
-  renderGraph();
+  if (!svg) return;
+
+  const { edges } = graphData.value;
+
+  svg.selectAll<SVGLineElement, GraphEdge>('line.edge')
+    .transition()
+    .duration(300)
+    .attr('stroke', (d) => (isEdgeConnectedToFocused(d) ? colors.highlight : colors.edge))
+    .attr('stroke-width', (d) => (isEdgeConnectedToFocused(d) ? 3 : 2))
+    .attr('stroke-opacity', (d) => (focusedNodeId.value ? (isEdgeConnectedToFocused(d) ? 0.9 : 0.15) : 0.7));
+
+  svg.selectAll<SVGCircleElement, GraphNode>('.server-node circle')
+    .transition()
+    .duration(300)
+    .attr('stroke', (d) => (d.id === focusedNodeId.value ? colors.highlight : colors.border))
+    .attr('stroke-width', (d) => (d.id === focusedNodeId.value ? 3 : 2))
+    .attr('opacity', (d) => (isConnectedToFocused(d.id, edges) ? 1 : 0.25));
+
+  svg.selectAll<SVGRectElement, GraphNode>('.agent-node rect')
+    .transition()
+    .duration(300)
+    .attr('stroke', (d) => (d.id === focusedNodeId.value ? colors.highlight : colors.border))
+    .attr('stroke-width', (d) => (d.id === focusedNodeId.value ? 3 : 2))
+    .attr('opacity', (d) => (isConnectedToFocused(d.id, edges) ? 1 : 0.25));
 });
 </script>
 
@@ -621,12 +652,6 @@ watch(focusedNodeId, () => {
 </template>
 
 <style scoped>
-:deep(.edge) {
-  transition:
-    stroke 0.15s ease,
-    stroke-opacity 0.15s ease;
-}
-
 :deep(.server-node:hover circle),
 :deep(.agent-node:hover rect) {
   filter: brightness(1.1);
