@@ -15,6 +15,20 @@ use std::collections::HashMap;
 
 use crate::config::{load_app_config, save_app_config, AppConfig};
 
+fn open_in_editor(path: &std::path::Path) -> Result<(), String> {
+    let editors = ["zed", "code", "cursor"];
+    for editor in &editors {
+        if which::which(editor).is_ok() {
+            return std::process::Command::new(editor)
+                .arg(path)
+                .spawn()
+                .map(|_| ())
+                .map_err(|e| format!("Failed to open with {}: {}", editor, e));
+        }
+    }
+    open::that(path).map_err(|e| e.to_string())
+}
+
 // Re-export commonly used types
 pub use agent::{get_all_agent_types, parse_agent_name, AgentType, SupportedAgent};
 
@@ -193,7 +207,7 @@ pub fn open_app_config_file_command() -> Result<(), String> {
         std::fs::write(&path, "{}").map_err(|e| e.to_string())?;
     }
 
-    open::that(path).map_err(|e| e.to_string())
+    open_in_editor(&path)
 }
 
 #[tauri::command]
@@ -217,7 +231,7 @@ pub fn open_config_file_command(agent_name: String) -> Result<(), String> {
         }
     }
 
-    open::that(path).map_err(|e| e.to_string())
+    open_in_editor(&path)
 }
 
 #[tauri::command]
